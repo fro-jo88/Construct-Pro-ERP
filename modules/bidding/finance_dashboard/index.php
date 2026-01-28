@@ -19,7 +19,7 @@ $kpis = [
 $bids = $db->query("SELECT b.*, fb.status as fb_status FROM bids b 
                      LEFT JOIN financial_bids fb ON b.id = fb.bid_id 
                      WHERE b.status IN ('GM_PRE_APPROVED', 'FINANCE_FINAL_REVIEW', 'WON', 'LOSS') 
-                     ORDER BY b.updated_at DESC")->fetchAll();
+                     ORDER BY b.created_at DESC")->fetchAll();
 
 ?>
 
