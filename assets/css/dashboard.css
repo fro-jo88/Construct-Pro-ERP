@@ -322,12 +322,44 @@
     cursor: pointer;
     font-size: 0.8rem;
 }
+
 /* Financial Bidding Dashboard Specifics */
-.stats-grid { margin-bottom: 2rem; }
-.stat-card { padding: 1.5rem !important; text-align: center; border: 1px solid rgba(255, 255, 255, 0.08); }
-.stat-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); margin-bottom: 0.8rem; }
-.stat-value { font-size: 2rem; font-weight: 700; text-shadow: 0 0 10px rgba(255,255,255,0.1); }
-.text-gold { color: var(--gold) !important; }
-.text-blue { color: #3498db !important; }
-.text-green { color: #2ecc71 !important; }
-.text-red { color: #e74c3c !important; }
+.stats-grid {
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    padding: 1.5rem !important;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    margin-bottom: 0.8rem;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+.text-gold {
+    color: var(--gold) !important;
+}
+
+.text-blue {
+    color: #3498db !important;
+}
+
+.text-green {
+    color: #2ecc71 !important;
+}
+
+.text-red {
+    color: #e74c3c !important;
+}

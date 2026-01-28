@@ -10,24 +10,16 @@ class AuthManager {
             exit();
         }
 
-        // Normalize current role
-        $current_role = isset($_SESSION['role_code']) ? $_SESSION['role_code'] : strtoupper($_SESSION['role']);
+        $current_role = $_SESSION['role_code'] ?? '';
 
-        // 1. GM and ADMIN have global override access
-        if ($current_role === 'GM' || $current_role === 'ADMIN') {
+        // 1. GM and SYSTEM_ADMIN have global override access
+        if ($current_role === 'GM' || $current_role === 'SYSTEM_ADMIN' || $current_role === 'SUPER_ADMIN') {
             return;
         }
 
         // 2. Check if required_role is an array (multiple allowed roles) or a single string
         if (is_array($required_role)) {
-            $authorized = false;
-            foreach ($required_role as $role) {
-                if (strtoupper($role) === $current_role) {
-                    $authorized = true;
-                    break;
-                }
-            }
-            if (!$authorized) {
+            if (!in_array($current_role, $required_role)) {
                 header("Location: unauthorized.php");
                 exit();
             }
@@ -42,7 +34,7 @@ class AuthManager {
 
     public static function login($username, $password) {
         $db = Database::getInstance();
-        $stmt = $db->prepare("SELECT u.*, r.role_name FROM users u JOIN roles r ON u.role_id = r.id WHERE u.username = ? AND u.status = 'active'");
+        $stmt = $db->prepare("SELECT u.*, r.role_name, r.role_code FROM users u JOIN roles r ON u.role_id = r.id WHERE u.username = ? AND u.status = 'active'");
         $stmt->execute([$username]);
         $user = $stmt->fetch();
 
@@ -50,7 +42,7 @@ class AuthManager {
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
             $_SESSION['role'] = $user['role_name'];
-            $_SESSION['role_code'] = strtoupper($user['role_name']); // NEW: Start using role_code standard
+            $_SESSION['role_code'] = $user['role_code'];
             $_SESSION['is_logged'] = true;
             
             // Check if it's a demo user (based on username pattern or email)

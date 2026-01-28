@@ -12,23 +12,6 @@ class SidebarEngine {
         
         // Determine current module for active highlighting
         $this->current_module = $_GET['module'] ?? 'dashboard';
-        
-        // Handle alias roles (e.g., finance_head -> finance)
-        $this->normalizeRole();
-    }
-
-    private function normalizeRole() {
-        $this->role = strtoupper($this->role);
-        
-        // Role Mappings for Shared Menus
-        $mappings = [
-            'TENDER_FINANCE' => 'FINANCE_BID_MANAGER',
-            'TENDER_TECHNICAL' => 'TECH_BID_MANAGER'
-        ];
-        
-        if (isset($mappings[$this->role])) {
-            $this->role = $mappings[$this->role];
-        }
     }
 
     private function getMenuItems() {
@@ -41,6 +24,16 @@ class SidebarEngine {
     public function render() {
         $items = $this->getMenuItems();
         $html = '<div class="nav-links-wrapper"><ul class="nav-links">';
+        $html .= '<style>
+            .nav-links li.active a {
+                background: linear-gradient(90deg, rgba(255, 204, 0, 0.15) 0%, rgba(255, 204, 0, 0.05) 100%);
+                color: var(--gold);
+                border-left: 3px solid var(--gold);
+                padding-left: calc(1rem - 3px);
+                font-weight: 600;
+            }
+            .nav-links a i { margin-right: 10px; width: 20px; text-align: center; }
+        </style>';
 
         foreach ($items as $item) {
             $activeClass = $this->isActive($item['url']) ? 'active' : '';

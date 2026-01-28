@@ -8,7 +8,7 @@ define('DB_NAME', 'wechecha_con');
 
 // App Constants
 define('APP_NAME', 'WECHECHA CONSTRUCTION ERP');
-define('APP_URL', 'http://localhost/new');
+define('APP_URL', 'http://localhost/erp/Construct-Pro-ERP');
 
 // Error Reporting
 error_reporting(E_ALL);

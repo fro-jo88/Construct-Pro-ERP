@@ -2,7 +2,6 @@
 // main.php
 require_once 'config/config.php';
 require_once 'includes/AuthManager.php';
-require_once 'includes/DashboardEngine.php';
 
 if (!AuthManager::isLoggedIn()) {
     header("Location: index.php");
@@ -14,38 +13,12 @@ $user_id = $_SESSION['user_id'];
 
 // LANDING LOGIC: If no module specified, go to role-specific dashboard
 if (!isset($_GET['module'])) {
-    $role_landing = [
-        'GM' => 'gm/dashboard',
-        'HR_MANAGER' => 'hr/dashboard',
-        'FINANCE_HEAD' => 'finance/dashboard',
-        'FINANCE_TEAM' => 'finance/dashboard',
-        'AUDIT_TEAM' => 'finance/audit_dashboard',
-        'TECH_BID_MANAGER' => 'bidding/technical_dashboard',
-        'FINANCE_BID_MANAGER' => 'bidding/finance_dashboard',
-        'PLANNING_MANAGER' => 'planning/dashboard',
-        'PLANNING_ENGINEER' => 'planning/tasks',
-        'FORMAN' => 'foreman/dashboard',
-        'STORE_MANAGER' => 'store/dashboard',
-        'STORE_KEEPER' => 'store/dashboard',
-        'DRIVER_MANAGER' => 'transport/dashboard',
-        'DRIVER' => 'transport/my_trips',
-        'TECHNICAL_AUDIT' => 'audit/site_progress',
-        'TENDER_FINANCE' => 'bidding/finance_dashboard',
-        'TENDER_TECHNICAL' => 'bidding/technical_dashboard',
-        'PURCHASE_MANAGER' => 'procurement/dashboard',
-        'PURCHASE_OFFICER' => 'procurement/requests',
-        'SYSTEM_ADMIN' => 'admin/dashboard',
-        'SUPER_ADMIN' => 'admin/dashboard'
-    ];
-    $norm_role = strtoupper($role);
-    if (isset($role_landing[$norm_role])) {
-        header("Location: main.php?module=" . $role_landing[$norm_role]);
-        exit();
-    }
+    $role_code = $_SESSION['role_code'] ?? 'default';
+    header("Location: main.php?module=dashboards/roles/" . $role_code);
+    exit();
 }
 
-$engine = new DashboardEngine($role, $user_id);
-$widgets = $engine->getWidgets();
+$role_code = $_SESSION['role_code'];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -66,13 +39,13 @@ $widgets = $engine->getWidgets();
         
         <?php
         require_once 'includes/SidebarEngine.php';
-        $sidebar = new SidebarEngine($role);
+        $sidebar = new SidebarEngine($role_code);
         echo $sidebar->render();
         ?>
 
         <div class="sidebar-footer">
             <div class="user-info">
-                <span class="role-badge"><?php echo $role; ?></span>
+                <span class="role-badge"><?php echo $role_code; ?></span>
                 <span class="username"><?php echo $_SESSION['username']; ?></span>
             </div>
             <a href="logout.php" class="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
@@ -81,7 +54,7 @@ $widgets = $engine->getWidgets();
 
     <main class="content">
         <header class="top-bar">
-            <h1><?php echo isset($_GET['module']) ? ucwords(str_replace(['hr/', '_'], ['HR: ', ' '], $_GET['module'])) : $role . ' Dashboard'; ?></h1>
+            <h1><?php echo isset($_GET['module']) ? ucwords(str_replace(['dashboards/roles/', 'hr/', '_'], ['', 'HR: ', ' '], $_GET['module'])) : $role_code . ' Dashboard'; ?></h1>
             <div class="actions">
                 <button class="btn-primary-sm">+ New Action</button>
             </div>
@@ -92,7 +65,7 @@ $widgets = $engine->getWidgets();
             if (isset($_GET['module'])) {
                 $module = $_GET['module'];
                 // Basic security check: allow only specific patterns (a-z, 0-9, /, _)
-                if (preg_match('/^[a-z0-9\/_]+$/', $module)) {
+                if (preg_match('/^[a-zA-Z0-9\/_]+$/', $module)) {
                     $module_file = "modules/" . $module . ".php";
                     $index_file = "modules/" . $module . "/index.php";
 
@@ -101,25 +74,13 @@ $widgets = $engine->getWidgets();
                     } elseif (file_exists($index_file)) {
                         include $index_file;
                     } else {
-                        $abs_module = realpath("modules") . DIRECTORY_SEPARATOR . str_replace("/", DIRECTORY_SEPARATOR, $module) . ".php";
-                        $abs_index = realpath("modules") . DIRECTORY_SEPARATOR . str_replace("/", DIRECTORY_SEPARATOR, $module) . DIRECTORY_SEPARATOR . "index.php";
-                        
                         echo "<div class='glass-card'>";
                         echo "<p style='color:#ff4444; font-weight:bold;'>Module '$module' not found.</p>";
-                        echo "<p class='text-dim' style='font-size:0.8rem;'>Looking for:<br>1. $module_file<br>2. $index_file</p>";
                         echo "</div>";
                     }
                 } else {
                     echo "<div class='glass-card'><p class='text-red'>Invalid module path.</p></div>";
                 }
-            } else {
-                ?>
-                <div class="widget-grid">
-                    <?php foreach ($widgets as $widget): ?>
-                        <?php echo $engine->renderWidget($widget); ?>
-                    <?php endforeach; ?>
-                </div>
-                <?php
             }
             ?>
         </div>

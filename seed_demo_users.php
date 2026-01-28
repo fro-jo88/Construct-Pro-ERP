@@ -83,7 +83,7 @@ try {
         $fn = $name_parts[0];
         $ln = $name_parts[1] ?? 'Ethiopia';
         
-        $stmt = $db->prepare("INSERT INTO employees (user_id, employee_code, first_name, last_name, department, designation, status) VALUES (?, ?, ?, ?, ?, ?, 'active') ON DUPLICATE KEY UPDATE status='active'");
+        $stmt = $db->prepare("INSERT INTO employees (user_id, employee_code, first_name, last_name, department, position, status) VALUES (?, ?, ?, ?, ?, ?, 'active') ON DUPLICATE KEY UPDATE status='active'");
         $emp_code = 'WCH-' . strtoupper(substr($data['user'], 0, 3)) . '-' . str_pad($user_id, 3, '0', STR_PAD_LEFT);
         $stmt->execute([$user_id, $emp_code, $fn, $ln, $data['dept'], $data['desig']]);
 
