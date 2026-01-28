@@ -158,31 +158,50 @@ $boq_data = !empty($fb['boq_json']) ? json_decode($fb['boq_json'], true) : null;
         <!-- SHEET 2: BOQ SUMMARY -->
         <div id="boq-summary" class="wizard-content">
             <div class="glass-card">
-                <h4 style="color:var(--gold); margin-bottom:1.5rem;"><i class="fas fa-compress-alt"></i> Sheet 2: Summary of Bill of Quantities</h4>
-                <table class="data-table">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                    <h4 style="color:var(--gold); margin:0;"><i class="fas fa-compress-alt"></i> Sheet 2: Summary of Bill of Quantities</h4>
+                    <button type="button" class="btn-primary-sm" onclick="addCategory()">+ Add New Category (C, D...)</button>
+                </div>
+                <table class="data-table" id="summary-table">
                     <thead>
                         <tr>
-                            <th>Item No</th>
+                            <th style="width:70px;">No</th>
                             <th>Description</th>
-                            <th style="text-align:right;">Amount (Birr)</th>
+                            <th style="width:180px; text-align:right;">Amount (Birr)</th>
+                            <th style="width:40px;"></th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr><td>A</td><td>SUB STRUCTURE</td><td id="summ-a" style="text-align:right;">0.00</td></tr>
-                        <tr><td>B</td><td>SUPER STRUCTURE</td><td id="summ-b" style="text-align:right;">0.00</td></tr>
+                    <tbody id="summary-tbody">
+                        <tr data-cat-id="sub">
+                            <td>A</td>
+                            <td><input type="text" class="cat-title-input" data-cat-id="sub" value="SUB STRUCTURE" oninput="syncCatTitle('sub', this.value)"></td>
+                            <td id="summ-sub" style="text-align:right;">0.00</td>
+                            <td></td>
+                        </tr>
+                        <tr data-cat-id="super">
+                            <td>B</td>
+                            <td><input type="text" class="cat-title-input" data-cat-id="super" value="SUPER STRUCTURE" oninput="syncCatTitle('super', this.value)"></td>
+                            <td id="summ-super" style="text-align:right;">0.00</td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
                         <tr style="border-top:2px solid var(--gold);">
-                            <td colspan="2" style="text-align:right; font-weight:bold;">Total A + B</td>
-                            <td id="summ-subtotal" style="text-align:right; font-weight:bold;">0.00</td>
+                            <td colspan="2" style="text-align:right; font-weight:bold; padding-top:1rem;">Total without VAT</td>
+                            <td id="summ-subtotal" style="text-align:right; font-weight:bold; padding-top:1rem;">0.00</td>
+                            <td></td>
                         </tr>
                         <tr>
                             <td colspan="2" style="text-align:right;">VAT (15%)</td>
                             <td id="summ-vat" style="text-align:right;">0.00</td>
+                            <td></td>
                         </tr>
                         <tr style="background:rgba(255,204,0,0.1);">
                             <td colspan="2" style="text-align:right; font-weight:bold; color:var(--gold);">TOTAL WITH VAT (15%)</td>
                             <td id="summ-grand" style="text-align:right; font-weight:bold; color:var(--gold);">0.00</td>
+                            <td></td>
                         </tr>
-                    </tbody>
+                    </tfoot>
                 </table>
             </div>
             <div class="mt-4" style="display:flex; justify-content:space-between;">
@@ -272,59 +291,125 @@ function deleteBOQRow(btn) {
     }
 }
 
+const categories = ['sub', 'super'];
+
+function syncCatTitle(catId, val) {
+    const titleEl = document.querySelector(`.category-title[data-cat-id="${catId}"] span`);
+    if(titleEl) titleEl.innerText = val;
+    calculateBOQ();
+}
+
+function addCategory() {
+    const nextCode = String.fromCharCode(65 + categories.length); // C, D, E...
+    const catId = 'cat_' + Date.now();
+    categories.push(catId);
+
+    // 1. Add to Summary
+    const summaryTbody = document.getElementById('summary-tbody');
+    const summaryRow = document.createElement('tr');
+    summaryRow.setAttribute('data-cat-id', catId);
+    summaryRow.innerHTML = `
+        <td>${nextCode}</td>
+        <td><input type="text" class="cat-title-input" data-cat-id="${catId}" value="NEW CATEGORY" oninput="syncCatTitle('${catId}', this.value)"></td>
+        <td id="summ-${catId}" style="text-align:right;">0.00</td>
+        <td><button type="button" class="btn-delete-row" onclick="deleteCategory('${catId}')"><i class="fas fa-times"></i></button></td>
+    `;
+    summaryTbody.appendChild(summaryRow);
+
+    // 2. Add to Detailed BOQ (Sheet 3)
+    const detailedContainer = document.querySelector('#detailed-boq .glass-card');
+    const nextBtn = document.querySelector('#detailed-boq .mt-4');
+    
+    const categoryDiv = document.createElement('div');
+    categoryDiv.className = 'boq-category mb-5';
+    categoryDiv.setAttribute('data-cat-id', catId);
+    categoryDiv.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center;" class="category-title" data-cat-id="${catId}">
+            <span>NEW CATEGORY</span>
+            <button type="button" class="btn-primary-sm" style="font-size:0.7rem; padding:4px 10px;" onclick="addBOQRow('${catId}')">+ Add New Item</button>
+        </div>
+        <table class="data-table boq-table" id="table-${catId}" data-category="${catId}">
+            <thead>
+                <tr>
+                    <th style="width:70px;">Item No</th>
+                    <th>Description</th>
+                    <th style="width:80px;">Unit</th>
+                    <th style="width:100px;">Quantity</th>
+                    <th style="width:120px;">Rate (Birr)</th>
+                    <th style="width:150px;">Amount (Birr)</th>
+                    <th style="width:40px;"></th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="5" style="text-align:right; font-weight:bold;">TOTAL CARRIED TO SUMMARY:</td>
+                    <td id="total-${catId}" class="category-total">0.00</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    `;
+    detailedContainer.appendChild(categoryDiv);
+    
+    calculateBOQ();
+}
+
+function deleteCategory(catId) {
+    if(confirm('Delete entire category and all its items?')) {
+        document.querySelector(`#summary-tbody tr[data-cat-id="${catId}"]`).remove();
+        document.querySelector(`.boq-category[data-cat-id="${catId}"]`).remove();
+        const index = categories.indexOf(catId);
+        if (index > -1) categories.splice(index, 1);
+        calculateBOQ();
+    }
+}
+
 function calculateBOQ() {
-    let totalA = 0;
-    let totalB = 0;
-    const boqData = { sub: [], super: [], totals: {} };
+    let grandSubtotal = 0;
+    const boqData = { categories: [], totals: {} };
 
-    // Calculate Sub Structure
-    document.querySelectorAll('#table-sub tbody tr').forEach(row => {
-        const no = row.querySelector('input[name="sub_no[]"]').value;
-        const desc = row.querySelector('input[name="sub_desc[]"]').value;
-        const unit = row.querySelector('input[name="sub_unit[]"]').value;
-        const qty = parseFloat(row.querySelector('input[name="sub_qty[]"]').value) || 0;
-        const rate = parseFloat(row.querySelector('input[name="sub_rate[]"]').value) || 0;
-        const amount = qty * rate;
+    categories.forEach(catId => {
+        let catTotal = 0;
+        const items = [];
+        const catTitle = document.querySelector(`.cat-title-input[data-cat-id="${catId}"]`).value;
+
+        document.querySelectorAll(`#table-${catId} tbody tr`).forEach(row => {
+            const no = row.querySelector(`input[name*="_no[]"]`).value;
+            const desc = row.querySelector(`input[name*="_desc[]"]`).value;
+            const unit = row.querySelector(`input[name*="_unit[]"]`).value;
+            const qty = parseFloat(row.querySelector(`input[name*="_qty[]"]`).value) || 0;
+            const rate = parseFloat(row.querySelector(`input[name*="_rate[]"]`).value) || 0;
+            const amount = qty * rate;
+            
+            row.querySelector('.amount-cell').innerText = amount.toLocaleString(undefined, {minimumFractionDigits:2});
+            catTotal += amount;
+            items.push({ no, desc, unit, qty, rate, amount });
+        });
+
+        const totalEl = document.getElementById(`total-${catId}`);
+        if(totalEl) totalEl.innerText = catTotal.toLocaleString(undefined, {minimumFractionDigits:2});
         
-        row.querySelector('.amount-cell').innerText = amount.toLocaleString(undefined, {minimumFractionDigits:2});
-        totalA += amount;
-        boqData.sub.push({ no, desc, unit, qty, rate, amount });
+        const summaryEl = document.getElementById(`summ-${catId}`);
+        if(summaryEl) summaryEl.innerText = catTotal.toLocaleString(undefined, {minimumFractionDigits:2});
+
+        grandSubtotal += catTotal;
+        boqData.categories.push({ id: catId, title: catTitle, items: items, total: catTotal });
     });
-    document.getElementById('total-sub').innerText = totalA.toLocaleString(undefined, {minimumFractionDigits:2});
 
-    // Calculate Super Structure
-    document.querySelectorAll('#table-super tbody tr').forEach(row => {
-        const no = row.querySelector('input[name="super_no[]"]').value;
-        const desc = row.querySelector('input[name="super_desc[]"]').value;
-        const unit = row.querySelector('input[name="super_unit[]"]').value;
-        const qty = parseFloat(row.querySelector('input[name="super_qty[]"]').value) || 0;
-        const rate = parseFloat(row.querySelector('input[name="super_rate[]"]').value) || 0;
-        const amount = qty * rate;
-        
-        row.querySelector('.amount-cell').innerText = amount.toLocaleString(undefined, {minimumFractionDigits:2});
-        totalB += amount;
-        boqData.super.push({ no, desc, unit, qty, rate, amount });
-    });
-    document.getElementById('total-super').innerText = totalB.toLocaleString(undefined, {minimumFractionDigits:2});
+    const vat = grandSubtotal * 0.15;
+    const grand = grandSubtotal + vat;
 
-    // Update Summary
-    const subtotal = totalA + totalB;
-    const vat = subtotal * 0.15;
-    const grand = subtotal + vat;
-
-    document.getElementById('summ-a').innerText = totalA.toLocaleString();
-    document.getElementById('summ-b').innerText = totalB.toLocaleString();
-    document.getElementById('summ-subtotal').innerText = subtotal.toLocaleString();
+    document.getElementById('summ-subtotal').innerText = grandSubtotal.toLocaleString();
     document.getElementById('summ-vat').innerText = vat.toLocaleString();
     document.getElementById('summ-grand').innerText = grand.toLocaleString();
 
-    // Update Grand Summary
-    document.getElementById('grand-final-a').innerText = grand.toLocaleString();
-    document.getElementById('grand-no-vat').innerText = subtotal.toLocaleString();
+    document.getElementById('grand-no-vat').innerText = grandSubtotal.toLocaleString();
     document.getElementById('grand-vat-val').innerText = vat.toLocaleString();
     document.getElementById('grand-total-final').innerText = grand.toLocaleString();
+    document.getElementById('grand-final-a').innerText = grand.toLocaleString();
 
-    boqData.totals = { a: totalA, b: totalB, subtotal, vat, grand };
+    boqData.totals = { subtotal: grandSubtotal, vat, grand };
     document.getElementById('boq_json_input').value = JSON.stringify(boqData);
 }
 
@@ -407,6 +492,19 @@ calculateBOQ();
 }
 .btn-delete-row:hover {
     opacity: 1;
+}
+.cat-title-input {
+    background: transparent;
+    border: none;
+    color: white;
+    font-weight: bold;
+    width: 100%;
+    text-transform: uppercase;
+}
+.cat-title-input:hover, .cat-title-input:focus {
+    background: rgba(255,255,255,0.05);
+    outline: none;
+    border-radius: 4px;
 }
 .no-border td { border: none !important; }
 </style>

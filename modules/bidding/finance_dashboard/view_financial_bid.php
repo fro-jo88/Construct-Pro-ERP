@@ -72,8 +72,19 @@ $is_gm = ($_SESSION['role_code'] ?? strtoupper($_SESSION['role'])) === 'GM';
                 <table class="data-table">
                     <thead><tr><th>No</th><th>Description</th><th style="text-align:right;">Amount (Birr)</th></tr></thead>
                     <tbody>
-                        <tr><td>A</td><td>SUB STRUCTURE</td><td style="text-align:right;"><?= number_format($boq['totals']['a'] ?? 0, 2) ?></td></tr>
-                        <tr><td>B</td><td>SUPER STRUCTURE</td><td style="text-align:right;"><?= number_format($boq['totals']['b'] ?? 0, 2) ?></td></tr>
+                        <?php if(!empty($boq['categories'])): 
+                            $chars = range('A', 'Z');
+                            foreach($boq['categories'] as $idx => $cat): ?>
+                            <tr>
+                                <td><?= $chars[$idx] ?? '' ?></td>
+                                <td><?= htmlspecialchars($cat['title']) ?></td>
+                                <td style="text-align:right;"><?= number_format($cat['total'], 2) ?></td>
+                            </tr>
+                        <?php endforeach; else: ?>
+                            <tr><td>A</td><td>SUB STRUCTURE</td><td style="text-align:right;"><?= number_format($boq['totals']['a'] ?? 0, 2) ?></td></tr>
+                            <tr><td>B</td><td>SUPER STRUCTURE</td><td style="text-align:right;"><?= number_format($boq['totals']['b'] ?? 0, 2) ?></td></tr>
+                        <?php endif; ?>
+                        
                         <tr style="background:rgba(255,255,255,0.05);">
                             <td colspan="2" style="text-align:right; font-weight:bold;">Sub Total</td>
                             <td style="text-align:right; font-weight:bold;"><?= number_format($boq['totals']['subtotal'] ?? 0, 2) ?></td>
@@ -99,34 +110,31 @@ $is_gm = ($_SESSION['role_code'] ?? strtoupper($_SESSION['role'])) === 'GM';
                             </tr>
                         </thead>
                         <tbody>
-                            <!-- Sub Structure -->
-                            <tr style="background:rgba(255,204,0,0.1); font-weight:bold;"><td colspan="6">A. SUB STRUCTURE</td></tr>
-                            <?php if(!empty($boq['sub'])): foreach($boq['sub'] as $item): ?>
-                            <tr>
-                                <td><?= htmlspecialchars($item['no']) ?></td>
-                                <td><?= htmlspecialchars($item['desc']) ?></td>
-                                <td><?= htmlspecialchars($item['unit']) ?></td>
-                                <td style="text-align:right;"><?= number_format($item['qty'], 2) ?></td>
-                                <td style="text-align:right;"><?= number_format($item['rate'], 2) ?> Birr</td>
-                                <td style="text-align:right; font-weight:bold; color:var(--gold);"><?= number_format($item['amount'], 2) ?></td>
-                            </tr>
+                            <?php if(!empty($boq['categories'])): foreach($boq['categories'] as $cat): ?>
+                                <tr style="background:rgba(255,204,0,0.1); font-weight:bold;"><td colspan="6"><?= strtoupper(htmlspecialchars($cat['title'])) ?></td></tr>
+                                <?php foreach($cat['items'] as $item): ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($item['no']) ?></td>
+                                    <td><?= htmlspecialchars($item['desc']) ?></td>
+                                    <td><?= htmlspecialchars($item['unit']) ?></td>
+                                    <td style="text-align:right;"><?= number_format($item['qty'], 2) ?></td>
+                                    <td style="text-align:right;"><?= number_format($item['rate'], 2) ?> Birr</td>
+                                    <td style="text-align:right; font-weight:bold; color:var(--gold);"><?= number_format($item['amount'], 2) ?></td>
+                                </tr>
+                                <?php endforeach; ?>
                             <?php endforeach; else: ?>
-                            <tr><td colspan="6" class="text-center">No items recorded.</td></tr>
-                            <?php endif; ?>
-
-                            <!-- Super Structure -->
-                            <tr style="background:rgba(255,204,0,0.1); font-weight:bold;"><td colspan="6">B. SUPER STRUCTURE</td></tr>
-                            <?php if(!empty($boq['super'])): foreach($boq['super'] as $item): ?>
-                            <tr>
-                                <td><?= htmlspecialchars($item['no'] ?? '') ?></td>
-                                <td><?= htmlspecialchars($item['desc'] ?? '') ?></td>
-                                <td><?= htmlspecialchars($item['unit'] ?? '') ?></td>
-                                <td style="text-align:right;"><?= number_format($item['qty'] ?? 0, 2) ?></td>
-                                <td style="text-align:right;"><?= number_format($item['rate'] ?? 0, 2) ?> Birr</td>
-                                <td style="text-align:right; font-weight:bold; color:var(--gold);"><?= number_format($item['amount'] ?? 0, 2) ?></td>
-                            </tr>
-                            <?php endforeach; else: ?>
-                            <tr><td colspan="6" class="text-center">No items recorded.</td></tr>
+                                <!-- Legacy Fallback -->
+                                <tr style="background:rgba(255,204,0,0.1); font-weight:bold;"><td colspan="6">A. SUB STRUCTURE</td></tr>
+                                <?php if(!empty($boq['sub'])): foreach($boq['sub'] as $item): ?>
+                                    <tr>
+                                        <td><?= htmlspecialchars($item['no']) ?></td>
+                                        <td><?= htmlspecialchars($item['desc']) ?></td>
+                                        <td><?= htmlspecialchars($item['unit']) ?></td>
+                                        <td style="text-align:right;"><?= number_format($item['qty'], 2) ?></td>
+                                        <td style="text-align:right;"><?= number_format($item['rate'], 2) ?> Birr</td>
+                                        <td style="text-align:right; font-weight:bold; color:var(--gold);"><?= number_format($item['amount'], 2) ?></td>
+                                    </tr>
+                                <?php endforeach; endif; ?>
                             <?php endif; ?>
                         </tbody>
                     </table>
