@@ -22,7 +22,12 @@ $fb = $tender['financial_bid'];
             <h2 style="color:var(--gold);"><i class="fas fa-file-invoice-dollar"></i> Financial Evaluation</h2>
             <p class="text-dim"><?= htmlspecialchars($tender['title']) ?> (<?= htmlspecialchars($tender['tender_no']) ?>)</p>
         </div>
-        <a href="main.php?module=bidding/finance_dashboard" class="btn-secondary-sm">Back to Dashboard</a>
+        <div style="display:flex; gap:1rem; align-items:center;">
+            <a href="modules/bidding/finance_dashboard/download_boq.php?id=<?= $bid_id ?>" class="btn-primary-sm" style="background:var(--gold); color:black; font-weight:bold;">
+                <i class="fas fa-file-excel mr-2"></i> Download Prof. BOQ Excel
+            </a>
+            <a href="main.php?module=bidding/finance_dashboard" class="btn-secondary-sm">Back to Dashboard</a>
+        </div>
     </div>
 
     <div class="glass-card">
