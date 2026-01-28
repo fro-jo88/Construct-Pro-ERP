@@ -94,8 +94,8 @@ $boq_data = !empty($fb['boq_json']) ? json_decode($fb['boq_json'], true) : null;
                                     <td><input type="text" name="<?= $cid ?>_no[]" value="<?= htmlspecialchars($item['no']) ?>"></td>
                                     <td><input type="text" name="<?= $cid ?>_desc[]" value="<?= htmlspecialchars($item['desc']) ?>" style="text-align:left;"></td>
                                     <td><input type="text" name="<?= $cid ?>_unit[]" value="<?= htmlspecialchars($item['unit']) ?>" style="text-align:center;"></td>
-                                    <td><input type="number" step="0.01" name="<?= $cid ?>_qty[]" class="calc-trigger" value="<?= $item['qty'] ?>"></td>
-                                    <td><input type="number" step="0.01" name="<?= $cid ?>_rate[]" class="calc-trigger" value="<?= $item['rate'] ?>"></td>
+                                    <td><input type="text" name="<?= $cid ?>_qty[]" class="calc-trigger" value="<?= htmlspecialchars($item['qty'] ?? 0) ?>"></td>
+                                    <td><input type="text" name="<?= $cid ?>_rate[]" class="calc-trigger" value="<?= htmlspecialchars($item['rate'] ?? 0) ?>"></td>
                                     <td class="amount-cell">0.00</td>
                                     <td style="text-align:center;">
                                         <button type="button" class="btn-delete-row" onclick="deleteBOQRow(this)" title="Delete Row">
@@ -242,8 +242,8 @@ function addBOQRow(category) {
         <td><input type="text" name="${category}_no[]" value=""></td>
         <td><input type="text" name="${category}_desc[]" value="" style="text-align:left;"></td>
         <td><input type="text" name="${category}_unit[]" value="" style="text-align:center;"></td>
-        <td><input type="number" step="0.01" name="${category}_qty[]" class="calc-trigger" value="0"></td>
-        <td><input type="number" step="0.01" name="${category}_rate[]" class="calc-trigger" value="0"></td>
+        <td><input type="text" name="${category}_qty[]" class="calc-trigger" value="0"></td>
+        <td><input type="text" name="${category}_rate[]" class="calc-trigger" value="0"></td>
         <td class="amount-cell">0.00</td>
         <td style="text-align:center;">
             <button type="button" class="btn-delete-row" onclick="deleteBOQRow(this)" title="Delete Row">
@@ -287,7 +287,11 @@ function addCategory() {
         <td>${nextCode}</td>
         <td><input type="text" class="cat-title-input" data-cat-id="${catId}" value="NEW CATEGORY" oninput="syncCatTitle('${catId}', this.value)"></td>
         <td id="summ-${catId}" style="text-align:right;">0.00</td>
-        <td><button type="button" class="btn-delete-row" onclick="deleteCategory('${catId}')"><i class="fas fa-times"></i></button></td>
+        <td style="text-align:center;">
+            <button type="button" class="btn-delete-row" onclick="deleteCategory('${catId}')" title="Delete Category">
+                <i class="fas fa-trash-alt"></i> Delete
+            </button>
+        </td>
     `;
     summaryTbody.appendChild(summaryRow);
 
@@ -340,6 +344,22 @@ function deleteCategory(catId) {
     }
 }
 
+// Formula Evaluator
+function evaluateFormula(input) {
+    let str = input.trim();
+    if (str.startsWith('=')) {
+        try {
+            // Remove '=' and sanitize
+            let expression = str.substring(1).replace(/[^0-9+\-*/().]/g, '');
+            // Simple evaluation using Function constructor (safer than eval)
+            return new Function('return ' + expression)() || 0;
+        } catch (e) {
+            return 0;
+        }
+    }
+    return parseFloat(str) || 0;
+}
+
 function calculateBOQ() {
     let grandSubtotal = 0;
     const boqData = { categories: [], totals: {} };
@@ -353,13 +373,24 @@ function calculateBOQ() {
             const no = row.querySelector(`input[name*="_no[]"]`).value;
             const desc = row.querySelector(`input[name*="_desc[]"]`).value;
             const unit = row.querySelector(`input[name*="_unit[]"]`).value;
-            const qty = parseFloat(row.querySelector(`input[name*="_qty[]"]`).value) || 0;
-            const rate = parseFloat(row.querySelector(`input[name*="_rate[]"]`).value) || 0;
+            
+            const qtyInput = row.querySelector(`input[name*="_qty[]"]`);
+            const rateInput = row.querySelector(`input[name*="_rate[]"]`);
+            
+            const qty = evaluateFormula(qtyInput.value);
+            const rate = evaluateFormula(rateInput.value);
             const amount = qty * rate;
             
             row.querySelector('.amount-cell').innerText = amount.toLocaleString(undefined, {minimumFractionDigits:2});
             catTotal += amount;
-            items.push({ no, desc, unit, qty, rate, amount });
+            items.push({ 
+                no, 
+                desc, 
+                unit, 
+                qty: qtyInput.value, // Keep formula or value 
+                rate: rateInput.value, 
+                amount 
+            });
         });
 
         const totalEl = document.getElementById(`total-${catId}`);

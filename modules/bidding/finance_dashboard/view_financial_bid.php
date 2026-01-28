@@ -117,8 +117,18 @@ $is_gm = ($_SESSION['role_code'] ?? strtoupper($_SESSION['role'])) === 'GM';
                                     <td><?= htmlspecialchars($item['no']) ?></td>
                                     <td><?= htmlspecialchars($item['desc']) ?></td>
                                     <td><?= htmlspecialchars($item['unit']) ?></td>
-                                    <td style="text-align:right;"><?= number_format($item['qty'], 2) ?></td>
-                                    <td style="text-align:right;"><?= number_format($item['rate'], 2) ?> Birr</td>
+                                    <td style="text-align:right;">
+                                        <?php 
+                                        $display_qty = is_numeric($item['qty']) ? number_format($item['qty'], 2) : htmlspecialchars($item['qty']);
+                                        echo $display_qty;
+                                        ?>
+                                    </td>
+                                    <td style="text-align:right;">
+                                        <?php 
+                                        $display_rate = is_numeric($item['rate']) ? number_format($item['rate'], 2) : htmlspecialchars($item['rate']);
+                                        echo $display_rate . " Birr";
+                                        ?>
+                                    </td>
                                     <td style="text-align:right; font-weight:bold; color:var(--gold);"><?= number_format($item['amount'], 2) ?></td>
                                 </tr>
                                 <?php endforeach; ?>
