@@ -25,6 +25,9 @@ $boq_data = !empty($fb['boq_json']) ? json_decode($fb['boq_json'], true) : null;
             <p class="text-dim"><?= htmlspecialchars($tender['title']) ?> (<?= htmlspecialchars($tender['tender_no']) ?>)</p>
         </div>
         <div style="display:flex; gap:1rem;">
+             <button type="button" onclick="document.getElementById('action_input').value='save_draft'; document.getElementById('boqForm').submit();" class="btn-secondary-sm">
+                <i class="fas fa-save mr-2"></i> Save as Draft
+            </button>
              <a href="modules/bidding/finance_dashboard/download_boq.php?id=<?= $bid_id ?>" class="btn-primary-sm" style="background:var(--gold); color:black; font-weight:bold;">
                 <i class="fas fa-file-excel mr-2"></i> Download BOQ Template
             </a>
@@ -34,14 +37,15 @@ $boq_data = !empty($fb['boq_json']) ? json_decode($fb['boq_json'], true) : null;
 
     <!-- Tab Navigation -->
     <div class="wizard-tabs mb-4">
-        <button class="wizard-tab active" onclick="switchTab('detailed-boq')">1. Detailed BOQ</button>
-        <button class="wizard-tab" onclick="switchTab('boq-summary')">2. BOQ Summary</button>
-        <button class="wizard-tab" onclick="switchTab('grand-summary')">3. Grand Summary</button>
+        <button class="wizard-tab active" data-tab="detailed-boq" onclick="switchTab('detailed-boq')">1. Detailed BOQ</button>
+        <button class="wizard-tab" data-tab="boq-summary" onclick="switchTab('boq-summary')">2. BOQ Summary</button>
+        <button class="wizard-tab" data-tab="grand-summary" onclick="switchTab('grand-summary')">3. Grand Summary</button>
     </div>
 
     <form id="boqForm" method="POST" action="main.php?module=bidding/finance_dashboard/save_financial_bid">
         <input type="hidden" name="bid_id" value="<?= $bid_id ?>">
         <input type="hidden" name="boq_json" id="boq_json_input">
+        <input type="hidden" name="action" id="action_input" value="submit_gm">
 
         <!-- SHEET 3: DETAILED BOQ -->
         <div id="detailed-boq" class="wizard-content active">
@@ -50,104 +54,63 @@ $boq_data = !empty($fb['boq_json']) ? json_decode($fb['boq_json'], true) : null;
                     <h4 style="color:var(--gold); margin:0;"><i class="fas fa-list-ol"></i> Sheet 3: Detailed Bill of Quantities</h4>
                 </div>
                 
-                <!-- Category A -->
-                <div class="boq-category mb-5">
-                    <div style="display:flex; justify-content:space-between; align-items:center;" class="category-title">
-                        <span>A. SUB STRUCTURE</span>
-                        <button type="button" class="btn-primary-sm" style="font-size:0.7rem; padding:4px 10px;" onclick="addBOQRow('sub')">+ Add New Item</button>
+                <div id="categories-container">
+                    <?php 
+                    $restored_categories = $boq_data['categories'] ?? [
+                        ['id' => 'sub', 'title' => 'SUB STRUCTURE', 'items' => [
+                            ['no' => '1.1', 'desc' => 'Excavation & Earth Work', 'unit' => 'm3', 'qty' => 0, 'rate' => 0],
+                            ['no' => '1.2', 'desc' => 'Masonry Work', 'unit' => 'm3', 'qty' => 0, 'rate' => 0],
+                            ['no' => '1.3', 'desc' => 'Concrete Work', 'unit' => 'm3', 'qty' => 0, 'rate' => 0]
+                        ]],
+                        ['id' => 'super', 'title' => 'SUPER STRUCTURE', 'items' => [
+                            ['no' => '2.1', 'desc' => 'Concrete Work', 'unit' => 'm3', 'qty' => 0, 'rate' => 0],
+                            ['no' => '2.2', 'desc' => 'Block Work', 'unit' => 'm2', 'qty' => 0, 'rate' => 0],
+                            ['no' => '2.3', 'desc' => 'Carpentry & Joinery', 'unit' => 'pcs', 'qty' => 0, 'rate' => 0]
+                        ]]
+                    ];
+                    foreach ($restored_categories as $cat): 
+                        $cid = $cat['id'];
+                    ?>
+                    <div class="boq-category mb-5" data-cat-id="<?= $cid ?>">
+                        <div style="display:flex; justify-content:space-between; align-items:center;" class="category-title" data-cat-id="<?= $cid ?>">
+                            <span><?= strtoupper(htmlspecialchars($cat['title'])) ?></span>
+                            <button type="button" class="btn-primary-sm" style="font-size:0.7rem; padding:4px 10px;" onclick="addBOQRow('<?= $cid ?>')">+ Add New Item</button>
+                        </div>
+                        <table class="data-table boq-table" id="table-<?= $cid ?>" data-category="<?= $cid ?>">
+                            <thead>
+                                <tr>
+                                    <th style="width:70px;">Item No</th>
+                                    <th>Description</th>
+                                    <th style="width:80px;">Unit</th>
+                                    <th style="width:100px;">Quantity</th>
+                                    <th style="width:120px;">Rate (Birr)</th>
+                                    <th style="width:150px;">Amount (Birr)</th>
+                                    <th style="width:40px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($cat['items'] as $item): ?>
+                                <tr>
+                                    <td><input type="text" name="<?= $cid ?>_no[]" value="<?= htmlspecialchars($item['no']) ?>"></td>
+                                    <td><input type="text" name="<?= $cid ?>_desc[]" value="<?= htmlspecialchars($item['desc']) ?>" style="text-align:left;"></td>
+                                    <td><input type="text" name="<?= $cid ?>_unit[]" value="<?= htmlspecialchars($item['unit']) ?>" style="text-align:center;"></td>
+                                    <td><input type="number" step="0.01" name="<?= $cid ?>_qty[]" class="calc-trigger" value="<?= $item['qty'] ?>"></td>
+                                    <td><input type="number" step="0.01" name="<?= $cid ?>_rate[]" class="calc-trigger" value="<?= $item['rate'] ?>"></td>
+                                    <td class="amount-cell">0.00</td>
+                                    <td><button type="button" class="btn-delete-row" onclick="deleteBOQRow(this)"><i class="fas fa-times"></i></button></td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="5" style="text-align:right; font-weight:bold;">TOTAL CARRIED TO SUMMARY:</td>
+                                    <td id="total-<?= $cid ?>" class="category-total">0.00</td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
                     </div>
-                    <table class="data-table boq-table" id="table-sub" data-category="sub">
-                        <thead>
-                            <tr>
-                                <th style="width:70px;">Item No</th>
-                                <th>Description</th>
-                                <th style="width:80px;">Unit</th>
-                                <th style="width:100px;">Quantity</th>
-                                <th style="width:120px;">Rate (Birr)</th>
-                                <th style="width:150px;">Amount (Birr)</th>
-                                <th style="width:40px;"></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php 
-                            $sub_items = $boq_data['sub'] ?? [
-                                ['no' => '1.1', 'desc' => 'Excavation & Earth Work', 'unit' => 'm3', 'qty' => 0, 'rate' => 0],
-                                ['no' => '1.2', 'desc' => 'Masonry Work', 'unit' => 'm3', 'qty' => 0, 'rate' => 0],
-                                ['no' => '1.3', 'desc' => 'Concrete Work', 'unit' => 'm3', 'qty' => 0, 'rate' => 0]
-                            ];
-                            foreach ($sub_items as $item): ?>
-                            <tr>
-                                <td><input type="text" name="sub_no[]" value="<?= $item['no'] ?>"></td>
-                                <td><input type="text" name="sub_desc[]" value="<?= $item['desc'] ?>" style="text-align:left;"></td>
-                                <td><input type="text" name="sub_unit[]" value="<?= $item['unit'] ?>" style="text-align:center;"></td>
-                                <td><input type="number" step="0.01" name="sub_qty[]" class="calc-trigger" value="<?= $item['qty'] ?>"></td>
-                                <td><input type="number" step="0.01" name="sub_rate[]" class="calc-trigger" value="<?= $item['rate'] ?>"></td>
-                                <td class="amount-cell">0.00</td>
-                                <td><button type="button" class="btn-delete-row" onclick="deleteBOQRow(this)"><i class="fas fa-times"></i></button></td>
-                            </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <td colspan="5" style="text-align:right; font-weight:bold;">TOTAL CARRIED TO SUMMARY (A):</td>
-                                <td id="total-sub" class="category-total">0.00</td>
-                                <td></td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-
-                <!-- Category B -->
-                <div class="boq-category">
-                    <div style="display:flex; justify-content:space-between; align-items:center;" class="category-title">
-                        <span>B. SUPER STRUCTURE</span>
-                        <button type="button" class="btn-primary-sm" style="font-size:0.7rem; padding:4px 10px;" onclick="addBOQRow('super')">+ Add New Item</button>
-                    </div>
-                    <table class="data-table boq-table" id="table-super" data-category="super">
-                        <thead>
-                            <tr>
-                                <th style="width:70px;">Item No</th>
-                                <th>Description</th>
-                                <th style="width:80px;">Unit</th>
-                                <th style="width:100px;">Quantity</th>
-                                <th style="width:120px;">Rate (Birr)</th>
-                                <th style="width:150px;">Amount (Birr)</th>
-                                <th style="width:40px;"></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php 
-                            $super_items = $boq_data['super'] ?? [
-                                ['no' => '2.1', 'desc' => 'Concrete Work', 'unit' => 'm3', 'qty' => 0, 'rate' => 0],
-                                ['no' => '2.2', 'desc' => 'Block Work', 'unit' => 'm2', 'qty' => 0, 'rate' => 0],
-                                ['no' => '2.3', 'desc' => 'Carpentry & Joinery', 'unit' => 'pcs', 'qty' => 0, 'rate' => 0],
-                                ['no' => '2.4', 'desc' => 'Roofing Work', 'unit' => 'm2', 'qty' => 0, 'rate' => 0],
-                                ['no' => '2.5', 'desc' => 'Metal Work', 'unit' => 'kg', 'qty' => 0, 'rate' => 0],
-                                ['no' => '2.6', 'desc' => 'Glazing Work', 'unit' => 'm2', 'qty' => 0, 'rate' => 0],
-                                ['no' => '2.7', 'desc' => 'Flooring Work', 'unit' => 'm2', 'qty' => 0, 'rate' => 0],
-                                ['no' => '2.8', 'desc' => 'Finishing Work', 'unit' => 'm2', 'qty' => 0, 'rate' => 0],
-                                ['no' => '2.9', 'desc' => 'Electrical Installation', 'unit' => 'LS', 'qty' => 0, 'rate' => 0]
-                            ];
-                            foreach ($super_items as $item): ?>
-                            <tr>
-                                <td><input type="text" name="super_no[]" value="<?= $item['no'] ?>"></td>
-                                <td><input type="text" name="super_desc[]" value="<?= $item['desc'] ?>" style="text-align:left;"></td>
-                                <td><input type="text" name="super_unit[]" value="<?= $item['unit'] ?>" style="text-align:center;"></td>
-                                <td><input type="number" step="0.01" name="super_qty[]" class="calc-trigger" value="<?= $item['qty'] ?>"></td>
-                                <td><input type="number" step="0.01" name="super_rate[]" class="calc-trigger" value="<?= $item['rate'] ?>"></td>
-                                <td class="amount-cell">0.00</td>
-                                <td><button type="button" class="btn-delete-row" onclick="deleteBOQRow(this)"><i class="fas fa-times"></i></button></td>
-                            </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <td colspan="5" style="text-align:right; font-weight:bold;">TOTAL CARRIED TO SUMMARY (B):</td>
-                                <td id="total-super" class="category-total">0.00</td>
-                                <td></td>
-                            </tr>
-                        </tfoot>
-                    </table>
+                    <?php endforeach; ?>
                 </div>
             </div>
             <div class="mt-4" style="text-align:right;">
@@ -172,18 +135,20 @@ $boq_data = !empty($fb['boq_json']) ? json_decode($fb['boq_json'], true) : null;
                         </tr>
                     </thead>
                     <tbody id="summary-tbody">
-                        <tr data-cat-id="sub">
-                            <td>A</td>
-                            <td><input type="text" class="cat-title-input" data-cat-id="sub" value="SUB STRUCTURE" oninput="syncCatTitle('sub', this.value)"></td>
-                            <td id="summ-sub" style="text-align:right;">0.00</td>
-                            <td></td>
+                        <?php foreach($restored_categories as $idx => $cat): 
+                            $chars = range('A', 'Z');
+                        ?>
+                        <tr data-cat-id="<?= $cat['id'] ?>">
+                            <td><?= $chars[$idx] ?? '' ?></td>
+                            <td><input type="text" class="cat-title-input" data-cat-id="<?= $cat['id'] ?>" value="<?= htmlspecialchars($cat['title']) ?>" oninput="syncCatTitle('<?= $cat['id'] ?>', this.value)"></td>
+                            <td id="summ-<?= $cat['id'] ?>" style="text-align:right;">0.00</td>
+                            <td>
+                                <?php if($idx > 1): ?>
+                                    <button type="button" class="btn-delete-row" onclick="deleteCategory('<?= $cat['id'] ?>')"><i class="fas fa-times"></i></button>
+                                <?php endif; ?>
+                            </td>
                         </tr>
-                        <tr data-cat-id="super">
-                            <td>B</td>
-                            <td><input type="text" class="cat-title-input" data-cat-id="super" value="SUPER STRUCTURE" oninput="syncCatTitle('super', this.value)"></td>
-                            <td id="summ-super" style="text-align:right;">0.00</td>
-                            <td></td>
-                        </tr>
+                        <?php endforeach; ?>
                     </tbody>
                     <tfoot>
                         <tr style="border-top:2px solid var(--gold);">
@@ -291,7 +256,7 @@ function deleteBOQRow(btn) {
     }
 }
 
-const categories = ['sub', 'super'];
+const categories = <?= json_encode(array_column($restored_categories, 'id')) ?>;
 
 function syncCatTitle(catId, val) {
     const titleEl = document.querySelector(`.category-title[data-cat-id="${catId}"] span`);
