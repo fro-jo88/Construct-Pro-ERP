@@ -29,9 +29,9 @@ if (!isset($_GET['module'])) {
         'STORE_KEEPER' => 'store/dashboard',
         'DRIVER_MANAGER' => 'transport/dashboard',
         'DRIVER' => 'transport/my_trips',
-        'CONSTRUCTION_AUDIT' => 'audit/site_progress',
-        'TENDER_FINANCE' => 'tender/finance',
-        'TENDER_TECHNICAL' => 'tender/technical',
+        'TECHNICAL_AUDIT' => 'audit/site_progress',
+        'TENDER_FINANCE' => 'bidding/finance_dashboard',
+        'TENDER_TECHNICAL' => 'bidding/technical_dashboard',
         'PURCHASE_MANAGER' => 'procurement/dashboard',
         'PURCHASE_OFFICER' => 'procurement/requests',
         'SYSTEM_ADMIN' => 'admin/dashboard',
@@ -94,10 +94,20 @@ $widgets = $engine->getWidgets();
                 // Basic security check: allow only specific patterns (a-z, 0-9, /, _)
                 if (preg_match('/^[a-z0-9\/_]+$/', $module)) {
                     $module_file = "modules/" . $module . ".php";
+                    $index_file = "modules/" . $module . "/index.php";
+
                     if (file_exists($module_file)) {
                         include $module_file;
+                    } elseif (file_exists($index_file)) {
+                        include $index_file;
                     } else {
-                        echo "<div class='glass-card'><p class='text-red'>Module '$module' not found.</p></div>";
+                        $abs_module = realpath("modules") . DIRECTORY_SEPARATOR . str_replace("/", DIRECTORY_SEPARATOR, $module) . ".php";
+                        $abs_index = realpath("modules") . DIRECTORY_SEPARATOR . str_replace("/", DIRECTORY_SEPARATOR, $module) . DIRECTORY_SEPARATOR . "index.php";
+                        
+                        echo "<div class='glass-card'>";
+                        echo "<p style='color:#ff4444; font-weight:bold;'>Module '$module' not found.</p>";
+                        echo "<p class='text-dim' style='font-size:0.8rem;'>Looking for:<br>1. $module_file<br>2. $index_file</p>";
+                        echo "</div>";
                     }
                 } else {
                     echo "<div class='glass-card'><p class='text-red'>Invalid module path.</p></div>";

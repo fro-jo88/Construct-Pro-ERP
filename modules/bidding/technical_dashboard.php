@@ -175,6 +175,20 @@ if (!$tender_id) {
                     </div>
                 </div>
 
+                <div class="glass-card mb-4" style="background: linear-gradient(to bottom right, rgba(255,204,0,0.05), transparent);">
+                    <h4 style="color:var(--gold); margin-bottom:1.25rem;">Technical Resources</h4>
+                    <div style="display:grid; gap:1rem;">
+                        <a href="main.php?module=bidding/specs&id=<?= $tender_id ?>" class="btn-secondary-sm" style="text-decoration:none; display:flex; align-items:center; gap:0.75rem;">
+                            <i class="fas fa-file-invoice" style="color:var(--gold);"></i>
+                            <span>Technical Specs & BoQ</span>
+                        </a>
+                        <a href="main.php?module=bidding/collaborate&id=<?= $tender_id ?>" class="btn-secondary-sm" style="text-decoration:none; display:flex; align-items:center; gap:0.75rem;">
+                            <i class="fas fa-comments" style="color:#00ff64;"></i>
+                            <span>Bid Team War-Room</span>
+                        </a>
+                    </div>
+                </div>
+
                 <div class="glass-card">
                     <h4 style="color:var(--gold); margin-bottom:1rem;">Tender Overview</h4>
                     <div style="font-size:0.9rem;">

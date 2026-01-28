@@ -18,9 +18,17 @@ class SidebarEngine {
     }
 
     private function normalizeRole() {
-        // Direct mapping is now used in role_menus.php
-        // Only ensuring uppercase just in case
         $this->role = strtoupper($this->role);
+        
+        // Role Mappings for Shared Menus
+        $mappings = [
+            'TENDER_FINANCE' => 'FINANCE_BID_MANAGER',
+            'TENDER_TECHNICAL' => 'TECH_BID_MANAGER'
+        ];
+        
+        if (isset($mappings[$this->role])) {
+            $this->role = $mappings[$this->role];
+        }
     }
 
     private function getMenuItems() {
