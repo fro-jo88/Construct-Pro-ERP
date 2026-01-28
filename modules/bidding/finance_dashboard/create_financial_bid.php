@@ -85,7 +85,7 @@ $boq_data = !empty($fb['boq_json']) ? json_decode($fb['boq_json'], true) : null;
                                     <th style="width:100px;">Quantity</th>
                                     <th style="width:120px;">Rate (Birr)</th>
                                     <th style="width:150px;">Amount (Birr)</th>
-                                    <th style="width:40px;"></th>
+                                    <th style="width:100px; text-align:center;">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -97,7 +97,11 @@ $boq_data = !empty($fb['boq_json']) ? json_decode($fb['boq_json'], true) : null;
                                     <td><input type="number" step="0.01" name="<?= $cid ?>_qty[]" class="calc-trigger" value="<?= $item['qty'] ?>"></td>
                                     <td><input type="number" step="0.01" name="<?= $cid ?>_rate[]" class="calc-trigger" value="<?= $item['rate'] ?>"></td>
                                     <td class="amount-cell">0.00</td>
-                                    <td><button type="button" class="btn-delete-row" onclick="deleteBOQRow(this)"><i class="fas fa-times"></i></button></td>
+                                    <td style="text-align:center;">
+                                        <button type="button" class="btn-delete-row" onclick="deleteBOQRow(this)" title="Delete Row">
+                                            <i class="fas fa-trash-alt"></i> Delete
+                                        </button>
+                                    </td>
                                 </tr>
                                 <?php endforeach; ?>
                             </tbody>
@@ -131,7 +135,7 @@ $boq_data = !empty($fb['boq_json']) ? json_decode($fb['boq_json'], true) : null;
                             <th style="width:70px;">No</th>
                             <th>Description</th>
                             <th style="width:180px; text-align:right;">Amount (Birr)</th>
-                            <th style="width:40px;"></th>
+                            <th style="width:100px; text-align:center;">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="summary-tbody">
@@ -142,9 +146,11 @@ $boq_data = !empty($fb['boq_json']) ? json_decode($fb['boq_json'], true) : null;
                             <td><?= $chars[$idx] ?? '' ?></td>
                             <td><input type="text" class="cat-title-input" data-cat-id="<?= $cat['id'] ?>" value="<?= htmlspecialchars($cat['title']) ?>" oninput="syncCatTitle('<?= $cat['id'] ?>', this.value)"></td>
                             <td id="summ-<?= $cat['id'] ?>" style="text-align:right;">0.00</td>
-                            <td>
+                            <td style="text-align:center;">
                                 <?php if($idx > 1): ?>
-                                    <button type="button" class="btn-delete-row" onclick="deleteCategory('<?= $cat['id'] ?>')"><i class="fas fa-times"></i></button>
+                                    <button type="button" class="btn-delete-row" onclick="deleteCategory('<?= $cat['id'] ?>')" title="Delete Category">
+                                        <i class="fas fa-trash-alt"></i> Delete
+                                    </button>
                                 <?php endif; ?>
                             </td>
                         </tr>
@@ -239,7 +245,11 @@ function addBOQRow(category) {
         <td><input type="number" step="0.01" name="${category}_qty[]" class="calc-trigger" value="0"></td>
         <td><input type="number" step="0.01" name="${category}_rate[]" class="calc-trigger" value="0"></td>
         <td class="amount-cell">0.00</td>
-        <td><button type="button" class="btn-delete-row" onclick="deleteBOQRow(this)"><i class="fas fa-times"></i></button></td>
+        <td style="text-align:center;">
+            <button type="button" class="btn-delete-row" onclick="deleteBOQRow(this)" title="Delete Row">
+                <i class="fas fa-trash-alt"></i> Delete
+            </button>
+        </td>
     `;
     tbody.appendChild(newRow);
     
