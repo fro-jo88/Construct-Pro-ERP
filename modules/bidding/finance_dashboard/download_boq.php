@@ -11,7 +11,10 @@ if (!$bid_id) die("Bid ID required.");
 $tender = TenderManager::getTenderWithBids($bid_id);
 if (!$tender) die("Tender not found.");
 
+$fb = $tender['financial_bid'];
 $project_name = $tender['title'];
+$boq_json = $fb['boq_json'] ?? '';
+
 $sanitized_name = preg_replace('/[^A-Za-z0-9]/', '_', $project_name);
 $filename = "Financial_Bid_" . $sanitized_name . ".xlsx";
 $filepath = __DIR__ . "/../../../uploads/bids/" . $filename;
@@ -23,7 +26,9 @@ if (!file_exists(__DIR__ . "/../../../uploads/bids")) {
 
 // Call Python script to generate
 $python_script = realpath(__DIR__ . "/../../../scripts/generate_boq.py");
-$cmd = "python \"$python_script\" \"" . addslashes($project_name) . "\" \"$filepath\"";
+// Escape JSON for shell
+$escaped_json = escapeshellarg($boq_json);
+$cmd = "python \"$python_script\" \"" . addslashes($project_name) . "\" \"$filepath\" $escaped_json";
 exec($cmd, $output, $return_var);
 
 if ($return_var === 0 && file_exists($filepath)) {

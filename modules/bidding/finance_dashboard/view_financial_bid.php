@@ -86,17 +86,48 @@ $is_gm = ($_SESSION['role_code'] ?? strtoupper($_SESSION['role'])) === 'GM';
             <div id="detailed-view" class="view-pane glass-card">
                 <h4 style="color:var(--gold); margin-bottom:1.5rem;">DETAILED BREAKDOWN</h4>
                 <p class="text-dim italic">Detailed audit of all quantities and rates submitted by estimator.</p>
-                <div style="background:rgba(0,0,0,0.2); padding:1rem; border-radius:12px; height:400px; overflow-y:auto; border:1px solid rgba(255,255,255,0.05);">
+                <div style="background:rgba(0,0,0,0.2); padding:1rem; border-radius:12px; height:500px; overflow-y:auto; border:1px solid rgba(255,255,255,0.05);">
                     <table class="data-table">
-                         <!-- Simplified view of the detailed items -->
-                        <thead><tr><th>Desc</th><th>Qty</th><th>Rate</th><th>Amount</th></tr></thead>
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Description</th>
+                                <th>Unit</th>
+                                <th style="text-align:right;">Qty</th>
+                                <th style="text-align:right;">Rate</th>
+                                <th style="text-align:right;">Amount</th>
+                            </tr>
+                        </thead>
                         <tbody>
-                            <tr style="background:rgba(255,204,0,0.1);"><td colspan="4">A. SUB STRUCTURE</td></tr>
-                            <tr><td>Excavation</td><td>-</td><td>-</td><td>-</td></tr>
-                            <tr><td>Masonry</td><td>-</td><td>-</td><td>-</td></tr>
-                            <tr style="background:rgba(255,204,0,0.1);"><td colspan="4">B. SUPER STRUCTURE</td></tr>
-                            <tr><td>Concrete</td><td>-</td><td>-</td><td>-</td></tr>
-                            <tr><td>Block Work</td><td>-</td><td>-</td><td>-</td></tr>
+                            <!-- Sub Structure -->
+                            <tr style="background:rgba(255,204,0,0.1); font-weight:bold;"><td colspan="6">A. SUB STRUCTURE</td></tr>
+                            <?php if(!empty($boq['sub'])): foreach($boq['sub'] as $item): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($item['no']) ?></td>
+                                <td><?= htmlspecialchars($item['desc']) ?></td>
+                                <td><?= htmlspecialchars($item['unit']) ?></td>
+                                <td style="text-align:right;"><?= number_format($item['qty'], 2) ?></td>
+                                <td style="text-align:right;"><?= number_format($item['rate'], 2) ?> Birr</td>
+                                <td style="text-align:right; font-weight:bold; color:var(--gold);"><?= number_format($item['amount'], 2) ?></td>
+                            </tr>
+                            <?php endforeach; else: ?>
+                            <tr><td colspan="6" class="text-center">No items recorded.</td></tr>
+                            <?php endif; ?>
+
+                            <!-- Super Structure -->
+                            <tr style="background:rgba(255,204,0,0.1); font-weight:bold;"><td colspan="6">B. SUPER STRUCTURE</td></tr>
+                            <?php if(!empty($boq['super'])): foreach($boq['super'] as $item): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($item['no'] ?? '') ?></td>
+                                <td><?= htmlspecialchars($item['desc'] ?? '') ?></td>
+                                <td><?= htmlspecialchars($item['unit'] ?? '') ?></td>
+                                <td style="text-align:right;"><?= number_format($item['qty'] ?? 0, 2) ?></td>
+                                <td style="text-align:right;"><?= number_format($item['rate'] ?? 0, 2) ?> Birr</td>
+                                <td style="text-align:right; font-weight:bold; color:var(--gold);"><?= number_format($item['amount'] ?? 0, 2) ?></td>
+                            </tr>
+                            <?php endforeach; else: ?>
+                            <tr><td colspan="6" class="text-center">No items recorded.</td></tr>
+                            <?php endif; ?>
                         </tbody>
                     </table>
                 </div>

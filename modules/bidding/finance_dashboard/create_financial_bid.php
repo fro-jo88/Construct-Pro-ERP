@@ -46,52 +46,52 @@ $boq_data = !empty($fb['boq_json']) ? json_decode($fb['boq_json'], true) : null;
         <!-- SHEET 3: DETAILED BOQ -->
         <div id="detailed-boq" class="wizard-content active">
             <div class="glass-card">
-                <h4 style="color:var(--gold); margin-bottom:1.5rem;"><i class="fas fa-list-ol"></i> Sheet 3: Detailed Bill of Quantities</h4>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                    <h4 style="color:var(--gold); margin:0;"><i class="fas fa-list-ol"></i> Sheet 3: Detailed Bill of Quantities</h4>
+                </div>
                 
                 <!-- Category A -->
                 <div class="boq-category mb-5">
-                    <h5 class="category-title">A. SUB STRUCTURE</h5>
-                    <table class="data-table boq-table" data-category="sub">
+                    <div style="display:flex; justify-content:space-between; align-items:center;" class="category-title">
+                        <span>A. SUB STRUCTURE</span>
+                        <button type="button" class="btn-primary-sm" style="font-size:0.7rem; padding:4px 10px;" onclick="addBOQRow('sub')">+ Add New Item</button>
+                    </div>
+                    <table class="data-table boq-table" id="table-sub" data-category="sub">
                         <thead>
                             <tr>
-                                <th style="width:80px;">Item No</th>
+                                <th style="width:70px;">Item No</th>
                                 <th>Description</th>
-                                <th style="width:100px;">Unit</th>
-                                <th style="width:120px;">Quantity</th>
-                                <th style="width:150px;">Rate (Birr)</th>
-                                <th style="width:180px;">Amount (Birr)</th>
+                                <th style="width:80px;">Unit</th>
+                                <th style="width:100px;">Quantity</th>
+                                <th style="width:120px;">Rate (Birr)</th>
+                                <th style="width:150px;">Amount (Birr)</th>
+                                <th style="width:40px;"></th>
                             </tr>
                         </thead>
                         <tbody>
+                            <?php 
+                            $sub_items = $boq_data['sub'] ?? [
+                                ['no' => '1.1', 'desc' => 'Excavation & Earth Work', 'unit' => 'm3', 'qty' => 0, 'rate' => 0],
+                                ['no' => '1.2', 'desc' => 'Masonry Work', 'unit' => 'm3', 'qty' => 0, 'rate' => 0],
+                                ['no' => '1.3', 'desc' => 'Concrete Work', 'unit' => 'm3', 'qty' => 0, 'rate' => 0]
+                            ];
+                            foreach ($sub_items as $item): ?>
                             <tr>
-                                <td>1.1</td>
-                                <td>Excavation & Earth Work</td>
-                                <td><input type="text" name="sub_unit[]" value="m3" readonly></td>
-                                <td><input type="number" step="0.01" name="sub_qty[]" class="calc-trigger" value="<?= $boq_data['sub'][0]['qty'] ?? 0 ?>"></td>
-                                <td><input type="number" step="0.01" name="sub_rate[]" class="calc-trigger" value="<?= $boq_data['sub'][0]['rate'] ?? 0 ?>"></td>
+                                <td><input type="text" name="sub_no[]" value="<?= $item['no'] ?>"></td>
+                                <td><input type="text" name="sub_desc[]" value="<?= $item['desc'] ?>" style="text-align:left;"></td>
+                                <td><input type="text" name="sub_unit[]" value="<?= $item['unit'] ?>" style="text-align:center;"></td>
+                                <td><input type="number" step="0.01" name="sub_qty[]" class="calc-trigger" value="<?= $item['qty'] ?>"></td>
+                                <td><input type="number" step="0.01" name="sub_rate[]" class="calc-trigger" value="<?= $item['rate'] ?>"></td>
                                 <td class="amount-cell">0.00</td>
+                                <td><button type="button" class="btn-delete-row" onclick="deleteBOQRow(this)"><i class="fas fa-times"></i></button></td>
                             </tr>
-                            <tr>
-                                <td>1.2</td>
-                                <td>Masonry Work</td>
-                                <td><input type="text" name="sub_unit[]" value="m3" readonly></td>
-                                <td><input type="number" step="0.01" name="sub_qty[]" class="calc-trigger" value="<?= $boq_data['sub'][1]['qty'] ?? 0 ?>"></td>
-                                <td><input type="number" step="0.01" name="sub_rate[]" class="calc-trigger" value="<?= $boq_data['sub'][1]['rate'] ?? 0 ?>"></td>
-                                <td class="amount-cell">0.00</td>
-                            </tr>
-                            <tr>
-                                <td>1.3</td>
-                                <td>Concrete Work</td>
-                                <td><input type="text" name="sub_unit[]" value="m3" readonly></td>
-                                <td><input type="number" step="0.01" name="sub_qty[]" class="calc-trigger" value="<?= $boq_data['sub'][2]['qty'] ?? 0 ?>"></td>
-                                <td><input type="number" step="0.01" name="sub_rate[]" class="calc-trigger" value="<?= $boq_data['sub'][2]['rate'] ?? 0 ?>"></td>
-                                <td class="amount-cell">0.00</td>
-                            </tr>
+                            <?php endforeach; ?>
                         </tbody>
                         <tfoot>
                             <tr>
                                 <td colspan="5" style="text-align:right; font-weight:bold;">TOTAL CARRIED TO SUMMARY (A):</td>
                                 <td id="total-sub" class="category-total">0.00</td>
+                                <td></td>
                             </tr>
                         </tfoot>
                     </table>
@@ -99,41 +99,52 @@ $boq_data = !empty($fb['boq_json']) ? json_decode($fb['boq_json'], true) : null;
 
                 <!-- Category B -->
                 <div class="boq-category">
-                    <h5 class="category-title">B. SUPER STRUCTURE</h5>
-                    <table class="data-table boq-table" data-category="super">
+                    <div style="display:flex; justify-content:space-between; align-items:center;" class="category-title">
+                        <span>B. SUPER STRUCTURE</span>
+                        <button type="button" class="btn-primary-sm" style="font-size:0.7rem; padding:4px 10px;" onclick="addBOQRow('super')">+ Add New Item</button>
+                    </div>
+                    <table class="data-table boq-table" id="table-super" data-category="super">
                         <thead>
                             <tr>
-                                <th style="width:80px;">Item No</th>
+                                <th style="width:70px;">Item No</th>
                                 <th>Description</th>
-                                <th style="width:100px;">Unit</th>
-                                <th style="width:120px;">Quantity</th>
-                                <th style="width:150px;">Rate (Birr)</th>
-                                <th style="width:180px;">Amount (Birr)</th>
+                                <th style="width:80px;">Unit</th>
+                                <th style="width:100px;">Quantity</th>
+                                <th style="width:120px;">Rate (Birr)</th>
+                                <th style="width:150px;">Amount (Birr)</th>
+                                <th style="width:40px;"></th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php 
-                            $super_items = [
-                                '2.1' => 'Concrete Work', '2.2' => 'Block Work', '2.3' => 'Carpentry & Joinery',
-                                '2.4' => 'Roofing Work', '2.5' => 'Metal Work', '2.6' => 'Glazing Work',
-                                '2.7' => 'Flooring Work', '2.8' => 'Finishing Work', '2.9' => 'Electrical Installation'
+                            $super_items = $boq_data['super'] ?? [
+                                ['no' => '2.1', 'desc' => 'Concrete Work', 'unit' => 'm3', 'qty' => 0, 'rate' => 0],
+                                ['no' => '2.2', 'desc' => 'Block Work', 'unit' => 'm2', 'qty' => 0, 'rate' => 0],
+                                ['no' => '2.3', 'desc' => 'Carpentry & Joinery', 'unit' => 'pcs', 'qty' => 0, 'rate' => 0],
+                                ['no' => '2.4', 'desc' => 'Roofing Work', 'unit' => 'm2', 'qty' => 0, 'rate' => 0],
+                                ['no' => '2.5', 'desc' => 'Metal Work', 'unit' => 'kg', 'qty' => 0, 'rate' => 0],
+                                ['no' => '2.6', 'desc' => 'Glazing Work', 'unit' => 'm2', 'qty' => 0, 'rate' => 0],
+                                ['no' => '2.7', 'desc' => 'Flooring Work', 'unit' => 'm2', 'qty' => 0, 'rate' => 0],
+                                ['no' => '2.8', 'desc' => 'Finishing Work', 'unit' => 'm2', 'qty' => 0, 'rate' => 0],
+                                ['no' => '2.9', 'desc' => 'Electrical Installation', 'unit' => 'LS', 'qty' => 0, 'rate' => 0]
                             ];
-                            $idx = 0;
-                            foreach ($super_items as $no => $label): ?>
+                            foreach ($super_items as $item): ?>
                             <tr>
-                                <td><?= $no ?></td>
-                                <td><?= $label ?><input type="hidden" name="super_desc[]" value="<?= $label ?>"></td>
-                                <td><input type="text" name="super_unit[]" value="Unit" class="text-center"></td>
-                                <td><input type="number" step="0.01" name="super_qty[]" class="calc-trigger" value="<?= $boq_data['super'][$idx]['qty'] ?? 0 ?>"></td>
-                                <td><input type="number" step="0.01" name="super_rate[]" class="calc-trigger" value="<?= $boq_data['super'][$idx]['rate'] ?? 0 ?>"></td>
+                                <td><input type="text" name="super_no[]" value="<?= $item['no'] ?>"></td>
+                                <td><input type="text" name="super_desc[]" value="<?= $item['desc'] ?>" style="text-align:left;"></td>
+                                <td><input type="text" name="super_unit[]" value="<?= $item['unit'] ?>" style="text-align:center;"></td>
+                                <td><input type="number" step="0.01" name="super_qty[]" class="calc-trigger" value="<?= $item['qty'] ?>"></td>
+                                <td><input type="number" step="0.01" name="super_rate[]" class="calc-trigger" value="<?= $item['rate'] ?>"></td>
                                 <td class="amount-cell">0.00</td>
+                                <td><button type="button" class="btn-delete-row" onclick="deleteBOQRow(this)"><i class="fas fa-times"></i></button></td>
                             </tr>
-                            <?php $idx++; endforeach; ?>
+                            <?php endforeach; ?>
                         </tbody>
                         <tfoot>
                             <tr>
                                 <td colspan="5" style="text-align:right; font-weight:bold;">TOTAL CARRIED TO SUMMARY (B):</td>
                                 <td id="total-super" class="category-total">0.00</td>
+                                <td></td>
                             </tr>
                         </tfoot>
                     </table>
@@ -234,27 +245,65 @@ function switchTab(tabId) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+function addBOQRow(category) {
+    const tbody = document.querySelector(`#table-${category} tbody`);
+    const newRow = document.createElement('tr');
+    newRow.innerHTML = `
+        <td><input type="text" name="${category}_no[]" value=""></td>
+        <td><input type="text" name="${category}_desc[]" value="" style="text-align:left;"></td>
+        <td><input type="text" name="${category}_unit[]" value="" style="text-align:center;"></td>
+        <td><input type="number" step="0.01" name="${category}_qty[]" class="calc-trigger" value="0"></td>
+        <td><input type="number" step="0.01" name="${category}_rate[]" class="calc-trigger" value="0"></td>
+        <td class="amount-cell">0.00</td>
+        <td><button type="button" class="btn-delete-row" onclick="deleteBOQRow(this)"><i class="fas fa-times"></i></button></td>
+    `;
+    tbody.appendChild(newRow);
+    
+    // Add event listeners to new inputs
+    newRow.querySelectorAll('.calc-trigger').forEach(input => {
+        input.addEventListener('input', calculateBOQ);
+    });
+}
+
+function deleteBOQRow(btn) {
+    if(confirm('Remove this BOQ item?')) {
+        btn.closest('tr').remove();
+        calculateBOQ();
+    }
+}
+
 function calculateBOQ() {
     let totalA = 0;
     let totalB = 0;
+    const boqData = { sub: [], super: [], totals: {} };
 
     // Calculate Sub Structure
-    document.querySelectorAll('[data-category="sub"] tbody tr').forEach(row => {
+    document.querySelectorAll('#table-sub tbody tr').forEach(row => {
+        const no = row.querySelector('input[name="sub_no[]"]').value;
+        const desc = row.querySelector('input[name="sub_desc[]"]').value;
+        const unit = row.querySelector('input[name="sub_unit[]"]').value;
         const qty = parseFloat(row.querySelector('input[name="sub_qty[]"]').value) || 0;
         const rate = parseFloat(row.querySelector('input[name="sub_rate[]"]').value) || 0;
         const amount = qty * rate;
+        
         row.querySelector('.amount-cell').innerText = amount.toLocaleString(undefined, {minimumFractionDigits:2});
         totalA += amount;
+        boqData.sub.push({ no, desc, unit, qty, rate, amount });
     });
     document.getElementById('total-sub').innerText = totalA.toLocaleString(undefined, {minimumFractionDigits:2});
 
     // Calculate Super Structure
-    document.querySelectorAll('[data-category="super"] tbody tr').forEach(row => {
+    document.querySelectorAll('#table-super tbody tr').forEach(row => {
+        const no = row.querySelector('input[name="super_no[]"]').value;
+        const desc = row.querySelector('input[name="super_desc[]"]').value;
+        const unit = row.querySelector('input[name="super_unit[]"]').value;
         const qty = parseFloat(row.querySelector('input[name="super_qty[]"]').value) || 0;
         const rate = parseFloat(row.querySelector('input[name="super_rate[]"]').value) || 0;
         const amount = qty * rate;
+        
         row.querySelector('.amount-cell').innerText = amount.toLocaleString(undefined, {minimumFractionDigits:2});
         totalB += amount;
+        boqData.super.push({ no, desc, unit, qty, rate, amount });
     });
     document.getElementById('total-super').innerText = totalB.toLocaleString(undefined, {minimumFractionDigits:2});
 
@@ -275,18 +324,15 @@ function calculateBOQ() {
     document.getElementById('grand-vat-val').innerText = vat.toLocaleString();
     document.getElementById('grand-total-final').innerText = grand.toLocaleString();
 
-    // Prepare JSON for save
-    const boqData = {
-        sub: [],
-        super: [],
-        totals: { a: totalA, b: totalB, subtotal, vat, grand }
-    };
-    // ... logic to push items to arrays ...
+    boqData.totals = { a: totalA, b: totalB, subtotal, vat, grand };
     document.getElementById('boq_json_input').value = JSON.stringify(boqData);
 }
 
-document.querySelectorAll('.calc-trigger').forEach(input => {
-    input.addEventListener('input', calculateBOQ);
+// Global listener for existing inputs
+document.addEventListener('input', (e) => {
+    if(e.target.classList.contains('calc-trigger')) {
+        calculateBOQ();
+    }
 });
 
 // Initial Calc
@@ -349,6 +395,18 @@ calculateBOQ();
     text-align: right;
     font-weight: bold;
     color: var(--gold);
+}
+.btn-delete-row {
+    background: transparent;
+    border: none;
+    color: #ff4444;
+    cursor: pointer;
+    font-size: 1rem;
+    opacity: 0.5;
+    transition: opacity 0.3s;
+}
+.btn-delete-row:hover {
+    opacity: 1;
 }
 .no-border td { border: none !important; }
 </style>

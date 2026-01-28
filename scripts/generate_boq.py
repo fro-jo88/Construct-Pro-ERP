@@ -3,7 +3,7 @@ import sys
 import os
 import json
 
-def create_boq(project_name, filename):
+def create_boq(project_name, filename, boq_data=None):
     workbook = xlsxwriter.Workbook(filename)
     
     # Formats
@@ -14,6 +14,21 @@ def create_boq(project_name, filename):
     subtotal_fmt = workbook.add_format({'bold': True, 'border': 1, 'bg_color': '#EEECE1', 'num_format': '#,##0.00'})
     grand_total_fmt = workbook.add_format({'bold': True, 'border': 1, 'bg_color': '#D9D9D9', 'num_format': '#,##0.00', 'size': 12})
     
+    # Defaults if no JSON
+    if not boq_data:
+        boq_data = {
+            'sub': [
+                {'no': '1.1', 'desc': 'Excavation & Earth Work', 'unit': 'm3', 'qty': 0, 'rate': 0},
+                {'no': '1.2', 'desc' : 'Masonry Work', 'unit': 'm3', 'qty': 0, 'rate' : 0},
+                {'no': '1.3', 'desc': 'Concrete Work', 'unit': 'm3', 'qty': 0, 'rate': 0}
+            ],
+            'super': [
+                {'no': '2.1', 'desc': 'Concrete Work', 'unit': 'm3', 'qty': 0, 'rate': 0},
+                {'no': '2.2', 'desc': 'Block Work', 'unit': 'm2', 'qty': 0, 'rate': 0},
+                {'no': '2.3', 'desc': 'Carpentry', 'unit': 'pcs', 'qty': 0, 'rate': 0}
+            ]
+        }
+
     # --- SHEET 3: DETAILED BOQ ---
     ws3 = workbook.add_worksheet('Detailed BOQ')
     ws3.set_column('B:B', 60)
@@ -30,11 +45,13 @@ def create_boq(project_name, filename):
     ws3.write(row, 1, 'SUB STRUCTURE', workbook.add_format({'bold': True}))
     row += 1
     
-    sections_a = [('1.1', 'Excavation & Earth Work', 'm3', 0, 0), ('1.2', 'Masonry Work', 'm3', 0, 0), ('1.3', 'Concrete Work', 'm3', 0, 0)]
     start_row_a = row + 1
-    for item_no, desc, unit, qty, rate in sections_a:
-        ws3.write(row, 0, item_no, cell_fmt); ws3.write(row, 1, desc, cell_fmt); ws3.write(row, 2, unit, cell_fmt)
-        ws3.write(row, 3, qty, cell_fmt); ws3.write(row, 4, rate, num_fmt)
+    for item in boq_data['sub']:
+        ws3.write(row, 0, item['no'], cell_fmt)
+        ws3.write(row, 1, item['desc'], cell_fmt)
+        ws3.write(row, 2, item['unit'], cell_fmt)
+        ws3.write(row, 3, item['qty'], cell_fmt)
+        ws3.write(row, 4, item['rate'], num_fmt)
         ws3.write_formula(row, 5, f'=D{row+1}*E{row+1}', num_fmt)
         row += 1
     end_row_a = row
@@ -47,11 +64,14 @@ def create_boq(project_name, filename):
     ws3.write(row, 0, 'B', workbook.add_format({'bold': True}))
     ws3.write(row, 1, 'SUPER STRUCTURE', workbook.add_format({'bold': True}))
     row += 1
-    sections_b = [('2.1', 'Concrete Work', 'm3', 0, 0), ('2.2', 'Block Work', 'm2', 0, 0), ('2.3', 'Carpentry', 'pcs', 0, 0), ('2.4', 'Roofing', 'm2', 0, 0), ('2.5', 'Metal Work', 'kg', 0, 0), ('2.6', 'Glazing', 'm2', 0, 0), ('2.7', 'Flooring', 'm2', 0, 0), ('2.8', 'Finishing', 'm2', 0, 0), ('2.9', 'Electrical', 'LS', 0, 0)]
+    
     start_row_b = row + 1
-    for item_no, desc, unit, qty, rate in sections_b:
-        ws3.write(row, 0, item_no, cell_fmt); ws3.write(row, 1, desc, cell_fmt); ws3.write(row, 2, unit, cell_fmt)
-        ws3.write(row, 3, qty, cell_fmt); ws3.write(row, 4, rate, num_fmt)
+    for item in boq_data['super']:
+        ws3.write(row, 0, item.get('no', ''), cell_fmt)
+        ws3.write(row, 1, item.get('desc', ''), cell_fmt)
+        ws3.write(row, 2, item.get('unit', ''), cell_fmt)
+        ws3.write(row, 3, item.get('qty', 0), cell_fmt)
+        ws3.write(row, 4, item.get('rate', 0), num_fmt)
         ws3.write_formula(row, 5, f'=D{row+1}*E{row+1}', num_fmt)
         row += 1
     end_row_b = row
@@ -91,10 +111,17 @@ def create_boq(project_name, filename):
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
-        print("Usage: python generate_boq.py <project_name> <output_file>")
+        print("Usage: python generate_boq.py <project_name> <output_file> [json_data]")
         sys.exit(1)
     
     proj_name = sys.argv[1]
     out_file = sys.argv[2]
-    create_boq(proj_name, out_file)
+    data = None
+    if len(sys.argv) > 3:
+        try:
+            data = json.loads(sys.argv[3])
+        except:
+            pass
+            
+    create_boq(proj_name, out_file, data)
     print(f"Created: {out_file}")
