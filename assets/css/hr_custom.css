@@ -1,0 +1,49 @@
+/* assets/css/hr_custom.css */
+.status-badge {
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.status-badge.draft {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ccc;
+}
+
+.status-badge.won,
+.status-badge.active,
+.status-badge.approved,
+.status-badge.present {
+    background: rgba(0, 255, 100, 0.15);
+    color: #00ff64;
+    border: 1px solid rgba(0, 255, 100, 0.2);
+}
+
+.status-badge.pending,
+.status-badge.gm_review {
+    background: rgba(255, 204, 0, 0.15);
+    color: var(--gold);
+    border: 1px solid rgba(255, 204, 0, 0.2);
+}
+
+.status-badge.rejected,
+.status-badge.lost,
+.status-badge.absent {
+    background: rgba(255, 68, 68, 0.15);
+    color: #ff4444;
+    border: 1px solid rgba(255, 68, 68, 0.2);
+}
+
+.mini-stat {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 1.2rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.hr-dashboard .glass-card:hover {
+    border-color: var(--gold);
+    box-shadow: 0 0 20px rgba(255, 204, 0, 0.1);
+}

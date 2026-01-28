@@ -1,0 +1,113 @@
+/* assets/css/style.css */
+/* theme: Midnight Obsidian with Electric Gold highlights */
+
+:root {
+    --bg-dark: #0b0e14;
+    --bg-card: rgba(255, 255, 255, 0.05);
+    --gold: #ffcc00;
+    --gold-glow: rgba(255, 204, 0, 0.3);
+    --text-main: #e0e0e0;
+    --text-dim: #a0a0a0;
+    --transition: 0.3s ease;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.login-body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.glass-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.login-container {
+    width: 100%;
+    max-width: 400px;
+}
+
+h1.brand {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px var(--gold-glow);
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--text-dim);
+}
+
+input,
+select {
+    width: 100%;
+    padding: 0.8rem;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: white;
+    outline: none;
+    transition: var(--transition);
+}
+
+input:focus,
+select:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 5px var(--gold-glow);
+}
+
+select option {
+    background: #0b0e14;
+    /* Var --bg-dark */
+    color: white;
+}
+
+button.btn-primary {
+    width: 100%;
+    padding: 1rem;
+    background-color: var(--gold);
+    color: black;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: var(--transition);
+    text-transform: uppercase;
+}
+
+button.btn-primary:hover {
+    background-color: #e6b800;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px var(--gold-glow);
+}
+
+.footer-text {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+}

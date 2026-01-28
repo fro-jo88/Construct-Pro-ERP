@@ -1,0 +1,17 @@
+.gemini/
+.agent/
+**/.git/
+**/.DS_Store
+node_modules/
+*.log
+tmp/
+check_schemas.php
+check_tables.php
+check_bid_tables.php
+check_cols.php
+fix_planning_schema.php
+seed_bids.php
+seed_gm_queues.php
+alter_bids.php
+inspect_db.php
+update_tenders_mode.sql
