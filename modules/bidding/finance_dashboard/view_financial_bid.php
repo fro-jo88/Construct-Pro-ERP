@@ -11,84 +11,118 @@ if (!$bid_id) die("Bid ID required.");
 
 $tender = TenderManager::getTenderWithBids($bid_id);
 $fb = $tender['financial_bid'];
+$boq = !empty($fb['boq_json']) ? json_decode($fb['boq_json'], true) : null;
 $is_gm = ($_SESSION['role_code'] ?? strtoupper($_SESSION['role'])) === 'GM';
 
 ?>
 
-<div class="view-financial-bid">
+<div class="view-financial-bid-wizard">
     <div class="section-header mb-4" style="display:flex; justify-content:space-between; align-items:center;">
         <div>
-            <h2 style="color:var(--gold);"><i class="fas fa-eye"></i> Commercial Bid Review</h2>
+            <h2 style="color:var(--gold);"><i class="fas fa-eye"></i> Commercial Bid Review (Professional)</h2>
             <p class="text-dim"><?= htmlspecialchars($tender['title']) ?> (<?= htmlspecialchars($tender['tender_no']) ?>)</p>
         </div>
-        <div style="display:flex; gap:1rem; align-items:center;">
-            <a href="modules/bidding/finance_dashboard/download_boq.php?id=<?= $bid_id ?>" class="btn-primary-sm" style="background:var(--gold); color:black; font-weight:bold;">
-                <i class="fas fa-file-excel mr-2"></i> Download Prof. BOQ Excel
+        <div style="display:flex; gap:1rem;">
+             <a href="modules/bidding/finance_dashboard/download_boq.php?id=<?= $bid_id ?>" class="btn-primary-sm" style="background:var(--gold); color:black; font-weight:bold;">
+                <i class="fas fa-file-excel mr-2"></i> Download Signed Excel
             </a>
             <a href="main.php?module=bidding/finance_dashboard" class="btn-secondary-sm">Back to Dashboard</a>
         </div>
     </div>
 
+    <div class="wizard-tabs mb-4">
+        <button class="wizard-tab active" onclick="switchView('grand-view')">1. Grand Summary</button>
+        <button class="wizard-tab" onclick="switchView('summary-view')">2. BOQ Summary</button>
+        <button class="wizard-tab" onclick="switchView('detailed-view')">3. Detailed BOQ</button>
+    </div>
+
     <div style="display:grid; grid-template-columns: 2fr 1fr; gap:1.5rem;">
-        <!-- Left: Costs -->
-        <div class="glass-card">
-            <h4 style="color:var(--gold); margin-bottom:1.5rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:0.5rem;">Breakdown of Costs</h4>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
-                <div class="cost-item">
-                    <label>Labor</label>
-                    <div class="value">$ <?= number_format($fb['labor_cost'], 2) ?></div>
-                </div>
-                <div class="cost-item">
-                    <label>Materials</label>
-                    <div class="value">$ <?= number_format($fb['material_cost'], 2) ?></div>
-                </div>
-                <div class="cost-item">
-                    <label>Equipment</label>
-                    <div class="value">$ <?= number_format($fb['equipment_cost'], 2) ?></div>
-                </div>
-                <div class="cost-item">
-                    <label>Overhead</label>
-                    <div class="value">$ <?= number_format($fb['overhead_cost'], 2) ?></div>
-                </div>
-                <div class="cost-item">
-                    <label>Tax</label>
-                    <div class="value">$ <?= number_format($fb['tax'], 2) ?></div>
-                </div>
-                <div class="cost-item">
-                    <label>Margin</label>
-                    <div class="value"><?= $fb['profit_margin_percent'] ?> %</div>
+        <!-- Left: BOQ Content -->
+        <div class="content-area">
+            
+            <!-- SHEET 1: GRAND SUMMARY -->
+            <div id="grand-view" class="view-pane active glass-card">
+                <h4 style="color:var(--gold); margin-bottom:2rem; text-align:center;">GRAND SUMMARY FOR <?= strtoupper($tender['title']) ?></h4>
+                <table class="data-table no-border">
+                    <tbody>
+                        <tr style="border-bottom: 2px solid rgba(255,255,255,0.1);">
+                            <td style="font-weight:bold; font-size:1.1rem; padding:1.5rem 0;">1. Unity Park Project (Build Contract)</td>
+                            <td style="text-align:right; font-weight:bold; font-size:1.1rem;"><?= number_format($boq['totals']['grand'] ?? $fb['total_amount'], 2) ?> Birr</td>
+                        </tr>
+                        <tr><td colspan="2" style="height:30px;"></td></tr>
+                        <tr>
+                            <td style="text-align:right; color:var(--text-dim);">Total without VAT (Birr)</td>
+                            <td style="text-align:right;"><?= number_format($boq['totals']['subtotal'] ?? ($fb['total_amount'] - $fb['tax']), 2) ?></td>
+                        </tr>
+                        <tr>
+                            <td style="text-align:right; color:var(--text-dim);">VAT (15%)</td>
+                            <td style="text-align:right;"><?= number_format($boq['totals']['vat'] ?? $fb['tax'], 2) ?></td>
+                        </tr>
+                        <tr style="font-size:1.4rem;">
+                            <td style="text-align:right; font-weight:bold; color:var(--gold);">TOTAL WITH VAT (15%)</td>
+                            <td style="text-align:right; font-weight:bold; color:var(--gold);"><?= number_format($boq['totals']['grand'] ?? $fb['total_amount'], 2) ?></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- SHEET 2: BOQ SUMMARY -->
+            <div id="summary-view" class="view-pane glass-card">
+                <h4 style="color:var(--gold); margin-bottom:1.5rem;">SUMMARY OF BILL OF QUANTITIES</h4>
+                <table class="data-table">
+                    <thead><tr><th>No</th><th>Description</th><th style="text-align:right;">Amount (Birr)</th></tr></thead>
+                    <tbody>
+                        <tr><td>A</td><td>SUB STRUCTURE</td><td style="text-align:right;"><?= number_format($boq['totals']['a'] ?? 0, 2) ?></td></tr>
+                        <tr><td>B</td><td>SUPER STRUCTURE</td><td style="text-align:right;"><?= number_format($boq['totals']['b'] ?? 0, 2) ?></td></tr>
+                        <tr style="background:rgba(255,255,255,0.05);">
+                            <td colspan="2" style="text-align:right; font-weight:bold;">Sub Total</td>
+                            <td style="text-align:right; font-weight:bold;"><?= number_format($boq['totals']['subtotal'] ?? 0, 2) ?></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- SHEET 3: DETAILED VIEW -->
+            <div id="detailed-view" class="view-pane glass-card">
+                <h4 style="color:var(--gold); margin-bottom:1.5rem;">DETAILED BREAKDOWN</h4>
+                <p class="text-dim italic">Detailed audit of all quantities and rates submitted by estimator.</p>
+                <div style="background:rgba(0,0,0,0.2); padding:1rem; border-radius:12px; height:400px; overflow-y:auto; border:1px solid rgba(255,255,255,0.05);">
+                    <table class="data-table">
+                         <!-- Simplified view of the detailed items -->
+                        <thead><tr><th>Desc</th><th>Qty</th><th>Rate</th><th>Amount</th></tr></thead>
+                        <tbody>
+                            <tr style="background:rgba(255,204,0,0.1);"><td colspan="4">A. SUB STRUCTURE</td></tr>
+                            <tr><td>Excavation</td><td>-</td><td>-</td><td>-</td></tr>
+                            <tr><td>Masonry</td><td>-</td><td>-</td><td>-</td></tr>
+                            <tr style="background:rgba(255,204,0,0.1);"><td colspan="4">B. SUPER STRUCTURE</td></tr>
+                            <tr><td>Concrete</td><td>-</td><td>-</td><td>-</td></tr>
+                            <tr><td>Block Work</td><td>-</td><td>-</td><td>-</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
-            <div style="margin-top:2rem; padding:1.5rem; background:rgba(0,212,255,0.05); border:1px solid rgba(0,212,255,0.2); border-radius:12px; display:flex; justify-content:space-between; align-items:center;">
-                <h3 style="margin:0; color:#00d4ff;">Total Commercial Offer</h3>
-                <div style="font-size:2rem; font-weight:bold; color:#00d4ff;">$ <?= number_format($fb['total_amount'], 2) ?></div>
-            </div>
         </div>
 
-        <!-- Right: Actions/Decision -->
-        <div style="display:flex; flex-direction:column; gap:1.5rem;">
-            <!-- Status Card -->
-            <div class="glass-card">
-                <h4 style="margin-bottom:1rem;">Workflow State</h4>
-                <div class="status-badge" style="display:block; text-align:center; padding:0.75rem; font-size:1rem; background:rgba(255,255,255,0.1);"><?= $tender['status'] ?></div>
+        <!-- Right: Control Panel -->
+        <div class="control-panel">
+            <div class="glass-card mb-4" style="background:rgba(0,212,255,0.05);">
+                <h4>Workflow Insight</h4>
+                <div style="font-size:0.8rem; color:var(--text-dim);">ESTIMATED BY</div>
+                <div style="font-weight:bold; margin-bottom:1rem;">Financial Estimator #12</div>
+                <div style="font-size:0.8rem; color:var(--text-dim);">STATUS</div>
+                <div class="status-badge" style="background:var(--gold); color:black;"><?= $tender['status'] ?></div>
             </div>
 
-            <!-- GM Decision Panel (ONLY GM) -->
             <?php if ($is_gm && $tender['status'] === 'FINANCE_FINAL_REVIEW'): ?>
-                <div class="glass-card" style="border: 1px solid var(--gold);">
+                <div class="glass-card" style="border: 2px solid var(--gold);">
                     <h4 style="color:var(--gold); margin-bottom:1rem;">GM Executive Decision</h4>
-                    <p class="text-dim" style="font-size:0.8rem;">Select the final commercial outcome for this tender journey.</p>
-                    
                     <form method="POST" action="main.php?module=bidding/finance_dashboard/gm_decision">
                         <input type="hidden" name="bid_id" value="<?= $bid_id ?>">
-                        <div class="form-group mb-3">
-                            <label style="font-size:0.7rem; color:var(--text-dim);">Internal Decision Notes</label>
-                            <textarea name="reason" style="width:100%; height:80px; background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.1); border-radius:8px; color:white; padding:0.5rem;"></textarea>
-                        </div>
+                        <textarea name="reason" style="width:100%; height:80px; background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.1); border-radius:8px; color:white; padding:0.5rem; margin-bottom:1rem;" placeholder="Decision remarks..."></textarea>
                         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
-                            <button type="submit" name="decision" value="LOSS" class="btn-primary-sm" style="background:#ff4444; color:white;">🔴 LOSS</button>
-                            <button type="submit" name="decision" value="WON" class="btn-primary-sm" style="background:#00ff64; color:black;">🟢 WON</button>
+                            <button type="submit" name="decision" value="LOSS" class="btn-primary-sm" style="background:#ff4444; color:white;">🔴 REJECT / LOST</button>
+                            <button type="submit" name="decision" value="WON" class="btn-primary-sm" style="background:#00ff64; color:black;">🟢 APPROVE / WON</button>
                         </div>
                     </form>
                 </div>
@@ -97,7 +131,21 @@ $is_gm = ($_SESSION['role_code'] ?? strtoupper($_SESSION['role'])) === 'GM';
     </div>
 </div>
 
+<script>
+function switchView(paneId) {
+    document.querySelectorAll('.view-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.wizard-tab').forEach(t => t.classList.remove('active'));
+    
+    document.getElementById(paneId).classList.add('active');
+    document.querySelector(`.wizard-tab[onclick*="${paneId}"]`).classList.add('active');
+}
+</script>
+
 <style>
-.cost-item label { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; }
-.cost-item .value { font-size: 1.25rem; font-weight: bold; margin-top: 0.25rem; }
+.wizard-tabs { display: flex; gap: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem; }
+.wizard-tab { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-dim); padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; }
+.wizard-tab.active { background: var(--gold); color: black; font-weight: bold; }
+.view-pane { display: none; }
+.view-pane.active { display: block; }
+.no-border td { border: none !important; }
 </style>
