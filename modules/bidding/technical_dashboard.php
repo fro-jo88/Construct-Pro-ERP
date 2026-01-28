@@ -4,7 +4,7 @@ require_once __DIR__ . '/../../includes/AuthManager.php';
 require_once __DIR__ . '/../../includes/TenderManager.php';
 require_once __DIR__ . '/../../includes/BidManager.php';
 
-AuthManager::requireRole(['TECH_BID_MANAGER', 'GM']);
+AuthManager::requireRole(['TECH_BID_MANAGER', 'TENDER_TECHNICAL', 'GM']);
 $role = $_SESSION['role'];
 
 $tender_id = $_GET['id'] ?? null;

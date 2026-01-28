@@ -3,7 +3,7 @@
 require_once __DIR__ . '/../../../includes/AuthManager.php';
 require_once __DIR__ . '/../../../includes/BidManager.php';
 
-AuthManager::requireRole(['TENDER_FINANCE', 'FINANCE_HEAD', 'GM']);
+AuthManager::requireRole(['TENDER_FINANCE', 'FINANCE_BID_MANAGER', 'FINANCE_HEAD', 'GM']);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $bid_id = $_POST['bid_id'];

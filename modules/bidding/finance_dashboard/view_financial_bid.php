@@ -4,7 +4,7 @@ require_once __DIR__ . '/../../../includes/AuthManager.php';
 require_once __DIR__ . '/../../../includes/BidManager.php';
 require_once __DIR__ . '/../../../includes/TenderManager.php';
 
-AuthManager::requireRole(['TENDER_FINANCE', 'FINANCE_HEAD', 'GM']);
+AuthManager::requireRole(['TENDER_FINANCE', 'FINANCE_BID_MANAGER', 'FINANCE_HEAD', 'GM']);
 
 $bid_id = $_GET['id'] ?? null;
 if (!$bid_id) die("Bid ID required.");
