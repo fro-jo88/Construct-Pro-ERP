@@ -1,7 +1,7 @@
 <?php
 // modules/foreman/incidents.php
-require_once '../../includes/AuthManager.php';
-require_once '../../includes/ForemanManager.php';
+require_once __DIR__ . '/../../includes/AuthManager.php';
+require_once __DIR__ . '/../../includes/ForemanManager.php';
 
 AuthManager::requireRole('FORMAN');
 $site = ForemanManager::getAssignedSite($_SESSION['user_id']);

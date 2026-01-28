@@ -1,7 +1,7 @@
 <?php
 // modules/gm/site_reports.php
-require_once '../../includes/AuthManager.php';
-require_once '../../includes/ForemanManager.php';
+require_once __DIR__ . '/../../includes/AuthManager.php';
+require_once __DIR__ . '/../../includes/ForemanManager.php';
 
 // Allow GM or Audit
 if (!isset($_SESSION['role_code']) || (!in_array($_SESSION['role_code'], ['GM', 'AUDIT', 'ADMIN']))) {

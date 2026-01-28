@@ -7,19 +7,30 @@ $module = $config['module'] ?? 'ALL';
 $items = [];
 
 try {
-    if ($module === 'HR' || $module === 'ALL') {
+    if ($module === 'HR' || $module === 'ALL' || $module === 'GLOBAL') {
         $hr = $db->query("SELECT 'HR' as mod_type, id, full_name as info, 'Employee Registration' as type FROM employees WHERE gm_approval_status = 'pending'")->fetchAll();
         $items = array_merge($items, $hr);
+        
+        $leaves = $db->query("SELECT 'HR' as mod_type, l.id, CONCAT(e.full_name, ' (', l.leave_type, ')') as info, 'Leave Request' as type FROM leave_requests l JOIN employees e ON l.employee_id = e.id WHERE l.status = 'approved_hr'")->fetchAll();
+        $items = array_merge($items, $leaves);
     }
-    if ($module === 'FINANCE' || $module === 'ALL') {
+    if ($module === 'FINANCE' || $module === 'ALL' || $module === 'GLOBAL') {
         $fin = $db->query("SELECT 'FINANCE' as mod_type, id, total_amount as info, 'Budget Approval' as type FROM budgets WHERE status = 'pending'")->fetchAll();
         foreach($fin as &$f) $f['info'] = "$".number_format($f['info'], 2);
         $items = array_merge($items, $fin);
     }
-    // Bids
-    if ($module === 'BIDS' || $module === 'ALL') {
+    if ($module === 'BIDS' || $module === 'ALL' || $module === 'GLOBAL') {
         $bids = $db->query("SELECT 'BIDS' as mod_type, id, title as info, 'Bid Decision' as type FROM bids WHERE status IN ('FINANCIAL_COMPLETED', 'FINANCE_FINAL_REVIEW')")->fetchAll();
         $items = array_merge($items, $bids);
+    }
+    if ($module === 'PLANNING' || $module === 'ALL' || $module === 'GLOBAL') {
+        try {
+            $plans = $db->query("SELECT 'PLANNING' as mod_type, id, goals as info, 'Weekly Work Plan' as type FROM weekly_plans WHERE status = 'pending'")->fetchAll();
+            $items = array_merge($items, $plans);
+            
+            $mats = $db->query("SELECT 'STORES' as mod_type, id, CONCAT('Req for ', item_name) as info, 'Material Approval' as type FROM material_requests WHERE gm_approval_status = 'pending'")->fetchAll();
+            $items = array_merge($items, $mats);
+        } catch (Exception $e) { }
     }
 } catch (Exception $e) { /* Table missing? */ }
 

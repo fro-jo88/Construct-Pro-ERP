@@ -1,8 +1,8 @@
 <?php
 // modules/bidding/gm_review.php
-require_once '../../includes/AuthManager.php';
-require_once '../../includes/TenderManager.php';
-require_once '../../includes/BidManager.php';
+require_once __DIR__ . '/../../includes/AuthManager.php';
+require_once __DIR__ . '/../../includes/TenderManager.php';
+require_once __DIR__ . '/../../includes/BidManager.php';
 
 AuthManager::requireRole('gm');
 

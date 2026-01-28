@@ -27,10 +27,21 @@ try {
         <?php else: ?>
             <div class="timeline">
                 <?php foreach ($reports as $r): ?>
-                    <div class="timeline-item mb-2" style="border-left: 2px solid var(--gold); padding-left: 1rem; position: relative;">
-                        <div style="font-weight: bold;"><?= $r['site_name'] ?></div>
-                        <div style="font-size: 0.8rem; color: var(--text-dim);"><?= date('M d, Y', strtotime($r['report_date'])) ?></div>
-                        <div style="font-size: 0.8rem;"><?= substr(htmlspecialchars($r['work_summary'] ?? ''), 0, 80) ?>...</div>
+                    <div class="timeline-item mb-3" style="border-left: 2px solid var(--gold); padding-left: 1rem; position: relative;">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div style="font-weight: bold; color: var(--gold);"><?= $r['site_name'] ?></div>
+                                <div style="font-size: 0.8rem; color: var(--text-dim);">
+                                    <?= date('M d', strtotime($r['report_date'])) ?> &bull; Progress: <?= $r['progress_percent'] ?? 0 ?>%
+                                </div>
+                            </div>
+                            <?php if (($config['role_code'] ?? '') === 'GM'): ?>
+                                <button class="btn-primary-sm" style="font-size: 0.6rem; padding: 2px 6px;" onclick="location.href='main.php?module=gm/site_reports&action=flag&id=<?= $r['id'] ?>'" title="Forward to Audit">
+                                    <i class="fas fa-shield-alt"></i> Flag
+                                </button>
+                            <?php endif; ?>
+                        </div>
+                        <div style="font-size: 0.8rem; margin-top: 4px;"><?= substr(htmlspecialchars($r['work_summary'] ?? $r['actual_work'] ?? ''), 0, 100) ?>...</div>
                     </div>
                 <?php endforeach; ?>
             </div>

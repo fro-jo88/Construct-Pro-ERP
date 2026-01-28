@@ -31,17 +31,27 @@ try {
                     <th>Site</th>
                     <th>Requester</th>
                     <th>Status</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
                 <?php if (empty($items)): ?>
-                    <tr><td colspan="3" class="text-center">No pending material requests.</td></tr>
+                    <tr><td colspan="4" class="text-center">No pending material requests.</td></tr>
                 <?php else: ?>
                     <?php foreach ($items as $item): ?>
                         <tr>
                             <td><?= htmlspecialchars($item['site_name']) ?></td>
                             <td><?= htmlspecialchars($item['username']) ?></td>
-                            <td><span class="status-badge <?= $item['gm_approval_status'] ?>"><?= strtoupper($item['gm_approval_status']) ?></span></td>
+                            <td><span class="status-badge <?= $item['gm_approval_status'] ?>"><?= strtoupper($item['gm_approval_status'] ?? 'pending') ?></span></td>
+                            <td>
+                                <?php if ($config['role_code'] === 'HR_MANAGER' && $item['gm_approval_status'] === 'pending'): ?>
+                                    <button class="btn-primary-sm" onclick="location.href='main.php?module=hr/materials&action=forward&id=<?= $item['id'] ?>'" title="Forward to Store">
+                                        <i class="fas fa-share-square"></i> Forward
+                                    </button>
+                                <?php else: ?>
+                                    <span class="text-dim">--</span>
+                                <?php endif; ?>
+                            </td>
                         </tr>
                     <?php endforeach; ?>
                 <?php endif; ?>

@@ -1,7 +1,7 @@
 <?php
 // modules/hr/reports.php
-require_once '../../includes/AuthManager.php';
-require_once '../../includes/HRManager.php';
+require_once __DIR__ . '/../../includes/AuthManager.php';
+require_once __DIR__ . '/../../includes/HRManager.php';
 
 AuthManager::requireRole(['HR_MANAGER', 'GM']);
 

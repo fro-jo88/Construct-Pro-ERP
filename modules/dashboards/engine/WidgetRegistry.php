@@ -24,7 +24,7 @@ class WidgetRegistry {
             'controller' => 'InventoryController::getRequests'
         ],
         'budget_overview' => [
-            'template' => 'kpi_card.php', // Reusing KPI template
+            'template' => 'budget_overview.php',
             'controller' => 'FinanceController::getBudgetKPIs'
         ],
         'attendance_today' => [
@@ -62,6 +62,78 @@ class WidgetRegistry {
         'audit_queue' => [
             'template' => 'audit_queue.php',
             'controller' => 'AuditController::getQueue'
+        ],
+        'finance_bid_review' => [
+            'template' => 'finance_bid_review.php',
+            'controller' => 'FinanceController::getPendingBids'
+        ],
+        'finance_ops_monitor' => [
+            'template' => 'finance_ops_monitor.php',
+            'controller' => 'FinanceController::getOpsData'
+        ],
+        'gm_reporting_panel' => [
+            'template' => 'gm_reporting_panel.php',
+            'controller' => 'FinanceController::getReportStats'
+        ],
+        'hr_actions' => [
+            'template' => 'hr_actions.php',
+            'controller' => 'HRController::getActions'
+        ],
+        'hr_bridge' => [
+            'template' => 'hr_bridge.php',
+            'controller' => 'HRController::getBridgeInfo'
+        ],
+        'hr_assignments' => [
+            'template' => 'hr_assignments.php',
+            'controller' => 'HRController::getAssignmentNeeds'
+        ],
+        'budget_manager' => [
+            'template' => 'budget_manager.php',
+            'controller' => 'FinanceController::getBudgets'
+        ],
+        'expense_entry' => [
+            'template' => 'expense_entry.php',
+            'controller' => 'FinanceController::getExpenses'
+        ],
+        'fin_bid_drafts' => [
+            'template' => 'fin_bid_drafts.php',
+            'controller' => 'FinanceController::getBidDrafts'
+        ],
+        'submission_history' => [
+            'template' => 'submission_history.php',
+            'controller' => 'FinanceController::getHistory'
+        ],
+        'budget_performance' => [
+            'template' => 'budget_performance_table.php',
+            'controller' => 'AuditController::getPerformance'
+        ],
+        'expense_ledger' => [
+            'template' => 'expense_ledger.php',
+            'controller' => 'AuditController::getLedger'
+        ],
+        'audit_alerts' => [
+            'template' => 'audit_alerts.php',
+            'controller' => 'AuditController::getAlerts'
+        ],
+        'financial_audit_log' => [
+            'template' => 'financial_audit_log.php',
+            'controller' => 'AuditController::getLogs'
+        ],
+        'audit_exports' => [
+            'template' => 'audit_export_controls.php',
+            'controller' => 'AuditController::getExportStats'
+        ],
+        'tech_bid_evaluator' => [
+            'template' => 'tech_bid_evaluator.php',
+            'controller' => 'TechnicalController::getPendingEvals'
+        ],
+        'planning_interface' => [
+            'template' => 'planning_interface.php',
+            'controller' => 'TechnicalController::getPlanningStatus'
+        ],
+        'tech_bid_submission' => [
+            'template' => 'tech_bid_submission.php',
+            'controller' => 'TechnicalController::getReadyBids'
         ]
     ];
 

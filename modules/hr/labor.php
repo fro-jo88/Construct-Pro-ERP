@@ -1,8 +1,8 @@
 <?php
 // modules/hr/labor.php
-require_once '../../includes/AuthManager.php';
-require_once '../../includes/HRManager.php';
-require_once '../../includes/SiteManager.php'; // Assuming SiteManager exists for getting sites
+require_once __DIR__ . '/../../includes/AuthManager.php';
+require_once __DIR__ . '/../../includes/HRManager.php';
+require_once __DIR__ . '/../../includes/SiteManager.php'; // Assuming SiteManager exists for getting sites
 
 AuthManager::requireRole(['HR_MANAGER', 'GM', 'FORMAN']);
 
