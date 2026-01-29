@@ -3,7 +3,7 @@
 require_once __DIR__ . '/../../includes/AuthManager.php';
 require_once __DIR__ . '/../../includes/BidManager.php';
 
-AuthManager::requireRole(['TENDER_FINANCE', 'GM']);
+AuthManager::requireRole(['FINANCE_BID_MANAGER', 'GM']);
 
 $db = Database::getInstance();
 $msg = '';

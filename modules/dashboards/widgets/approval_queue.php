@@ -10,9 +10,6 @@ try {
     if ($module === 'HR' || $module === 'ALL' || $module === 'GLOBAL') {
         $hr = $db->query("SELECT 'HR' as mod_type, id, full_name as info, 'Employee Registration' as type FROM employees WHERE gm_approval_status = 'pending'")->fetchAll();
         $items = array_merge($items, $hr);
-        
-        $leaves = $db->query("SELECT 'HR' as mod_type, l.id, CONCAT(e.full_name, ' (', l.leave_type, ')') as info, 'Leave Request' as type FROM leave_requests l JOIN employees e ON l.employee_id = e.id WHERE l.status = 'approved_hr'")->fetchAll();
-        $items = array_merge($items, $leaves);
     }
     if ($module === 'FINANCE' || $module === 'ALL' || $module === 'GLOBAL') {
         $fin = $db->query("SELECT 'FINANCE' as mod_type, id, total_amount as info, 'Budget Approval' as type FROM budgets WHERE status = 'pending'")->fetchAll();

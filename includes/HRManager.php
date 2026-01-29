@@ -189,6 +189,11 @@ class HRManager {
 
             self::logAction($gm_user_id, 'approve_employee', "GM activated profile for $emp[employee_code]. Login enabled.");
             
+            // Notification
+            require_once __DIR__ . '/../core/NotificationManager.php';
+            NotificationManager::notifyUser($emp['user_id'], 'Account Activated', "Welcome! Your Construct Pro account has been activated. You can now log in.", "main.php");
+            NotificationManager::notifyRole('HR_MANAGER', 'Employee Approved', "Employee $emp[employee_code] has been approved and activated by GM.", "main.php?module=hr/add_employee");
+
             if (!$inTransaction) $db->commit();
             return true;
         } catch (Exception $e) {
@@ -356,18 +361,7 @@ class HRManager {
         return $db->query("SELECT a.*, u.username FROM hr_announcements a JOIN users u ON a.created_by = u.id ORDER BY a.created_at DESC LIMIT 10")->fetchAll();
     }
 
-    /* --- 9. LEAVE MANAGEMENT --- */
-
-    public static function getPendingLeaveRequests() {
-        $db = Database::getInstance();
-        return $db->query("SELECT l.*, e.first_name, e.last_name FROM leave_requests l JOIN employees e ON l.employee_id = e.id WHERE l.status = 'pending'")->fetchAll();
-    }
-
-    public static function approveLeave($leave_id, $hr_user_id) {
-        $db = Database::getInstance();
-        $stmt = $db->prepare("UPDATE leave_requests SET status = 'approved', approved_by = ? WHERE id = ?");
-        return $stmt->execute([$hr_user_id, $leave_id]);
-    }
+    /* --- 9. LEAVE MANAGEMENT MOVED TO LeaveManager --- */
 
     /* --- 10. MATERIAL FORWARDING --- */
 
@@ -393,7 +387,7 @@ class HRManager {
         return [
             'total_employees' => $db->query("SELECT COUNT(*) FROM employees WHERE status='active'")->fetchColumn(),
             'active_tenders' => $db->query("SELECT COUNT(*) FROM bids WHERE status NOT IN ('WON', 'LOSS')")->fetchColumn(),
-            'pending_leaves' => $db->query("SELECT COUNT(*) FROM leave_requests WHERE status='pending'")->fetchColumn(),
+            'pending_leaves' => $db->query("SELECT COUNT(*) FROM leave_requests WHERE status='pending_hr'")->fetchColumn(),
             'pending_materials' => $db->query("SELECT COUNT(*) FROM material_requests WHERE hr_review_status='pending'")->fetchColumn(),
             'attendance_today' => $db->query("SELECT COUNT(*) FROM site_attendance WHERE work_date = CURDATE()")->fetchColumn()
         ];

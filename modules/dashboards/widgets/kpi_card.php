@@ -49,7 +49,7 @@ switch ($type) {
         $icon = "file-contract";
         break;
     case 'pending_leaves':
-        $value = $db->query("SELECT COUNT(*) FROM leave_requests WHERE status = 'pending'")->fetchColumn();
+        $value = $db->query("SELECT COUNT(*) FROM leave_requests WHERE status = 'pending_hr'")->fetchColumn();
         $label = "Leave Requests";
         $icon = "calendar-alt";
         break;
@@ -97,7 +97,7 @@ switch ($type) {
         break;
     case 'pending_approvals':
         $bids = $db->query("SELECT COUNT(*) FROM bids WHERE status IN ('TECHNICAL_COMPLETED', 'FINANCIAL_COMPLETED')")->fetchColumn();
-        $leaves = $db->query("SELECT COUNT(*) FROM leave_requests WHERE status = 'pending'")->fetchColumn();
+        $leaves = $db->query("SELECT COUNT(*) FROM leave_requests WHERE status = 'pending_hr'")->fetchColumn();
         $value = $bids + $leaves;
         $label = "Pending Approvals";
         $icon = "clipboard-check";

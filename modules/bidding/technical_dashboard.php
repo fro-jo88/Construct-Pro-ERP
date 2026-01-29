@@ -4,7 +4,7 @@ require_once __DIR__ . '/../../includes/AuthManager.php';
 require_once __DIR__ . '/../../includes/TenderManager.php';
 require_once __DIR__ . '/../../includes/BidManager.php';
 
-AuthManager::requireRole(['TECH_BID_MANAGER', 'TENDER_TECHNICAL', 'GM']);
+AuthManager::requireRole(['TECH_BID_MANAGER', 'GM']);
 $role = $_SESSION['role'];
 
 $tender_id = $_GET['id'] ?? null;
@@ -105,7 +105,7 @@ if (!$tender_id) {
                                         <td><?= htmlspecialchars($req['request_details']) ?></td>
                                         <td><span class="status-badge" style="background:rgba(255,255,255,0.1);"><?= $req['status'] ?></span></td>
                                         <td>
-                                            <?php if ($req['output_type']): ?>
+                                            <?php if (!empty($req['output_type'])): ?>
                                                 <span style="color:#00ff64;"><i class="fas fa-check-circle"></i> Received</span>
                                             <?php else: ?>
                                                 <span style="color:var(--text-dim);">Awaiting Response</span>

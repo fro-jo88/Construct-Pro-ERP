@@ -153,6 +153,24 @@ class GMManager {
                     break;
             }
 
+
+            // 3. Notify Stakeholders
+            require_once __DIR__ . '/../core/NotificationManager.php';
+            $notifTitle = strtoupper($module) . " Approval Decision";
+            $notifMsg = "GM has $decision the request for $module (Ref: $ref_id). Reason: $reason";
+            
+            if ($module === 'HR') {
+                NotificationManager::notifyRole('HR_MANAGER', $notifTitle, $notifMsg, "main.php?module=hr/dashboard");
+            } elseif ($module === 'BIDS') {
+                NotificationManager::notifyRole('HR_MANAGER', $notifTitle, $notifMsg, "main.php?module=hr/tenders");
+                NotificationManager::notifyRole('TECH_BID_MANAGER', $notifTitle, $notifMsg, "main.php?module=bidding/dashboard");
+                NotificationManager::notifyRole('FINANCE_BID_MANAGER', $notifTitle, $notifMsg, "main.php?module=bidding/finance_bid_dashboard/index");
+            } elseif ($module === 'FINANCE') {
+                NotificationManager::notifyRole('FINANCE_MANAGER', $notifTitle, $notifMsg, "main.php?module=finance/budgets");
+            } elseif ($module === 'PROCUREMENT') {
+                NotificationManager::notifyRole('PROCUREMENT_OFFICER', $notifTitle, $notifMsg, "main.php?module=procurement/dashboard");
+            }
+
             $db->commit();
             return true;
         } catch (Exception $e) {
@@ -207,4 +225,201 @@ class GMManager {
                                              WHERE mr.gm_approval_status = 'pending'")->fetchAll()
         ];
     }
+
+    /**
+     * Get system-wide logs for GM oversight
+     */
+    public static function getSystemLogs($limit = 100) {
+        $db = Database::getInstance();
+        try {
+            $stmt = $db->prepare("SELECT sl.*, u.username 
+                              FROM system_logs sl 
+                              LEFT JOIN users u ON sl.user_id = u.id 
+                              ORDER BY sl.created_at DESC 
+                              LIMIT ?");
+            $stmt->execute([$limit]);
+            return $stmt->fetchAll();
+        } catch (Exception $e) {
+            // Fallback if system_logs table doesn't exist yet
+            return [];
+        }
+    }
+
+    /**
+     * Get audit trail for compliance and oversight
+     */
+    public static function getAuditTrail($module = null, $limit = 100) {
+        $db = Database::getInstance();
+        try {
+            if ($module) {
+                $stmt = $db->prepare("SELECT at.*, u.username 
+                                  FROM audit_trail at 
+                                  LEFT JOIN users u ON at.user_id = u.id 
+                                  WHERE at.module = ? 
+                                  ORDER BY at.created_at DESC 
+                                  LIMIT ?");
+                $stmt->execute([$module, $limit]);
+                return $stmt->fetchAll();
+            } else {
+                $stmt = $db->prepare("SELECT at.*, u.username 
+                                  FROM audit_trail at 
+                                  LEFT JOIN users u ON at.user_id = u.id 
+                                  ORDER BY at.created_at DESC 
+                                  LIMIT ?");
+                $stmt->execute([$limit]);
+                return $stmt->fetchAll();
+            }
+        } catch (Exception $e) {
+            // Fallback if audit_trail table doesn't exist yet
+            return [];
+        }
+    }
+
+    /**
+     * Get all pending approvals across all modules
+     */
+    public static function getPendingApprovals() {
+        $db = Database::getInstance();
+        $approvals = [];
+
+        // HR - Employee Approvals
+        try {
+            $employees = $db->query("SELECT e.*, 'HR' as module_type, 'Employee Approval' as approval_type 
+                                    FROM employees e 
+                                    WHERE e.gm_approval_status = 'pending' 
+                                    ORDER BY e.created_at DESC")->fetchAll();
+            $approvals = array_merge($approvals, $employees);
+        } catch (Exception $e) {}
+
+        // HR - Leave Requests
+        try {
+            $leaves = $db->query("SELECT l.*, u.username as employee_name, 'HR' as module_type, 'Leave Request' as approval_type 
+                                 FROM leave_requests l 
+                                 JOIN users u ON l.user_id = u.id 
+                                 WHERE l.gm_approval_status = 'pending' 
+                                 ORDER BY l.created_at DESC")->fetchAll();
+            $approvals = array_merge($approvals, $leaves);
+        } catch (Exception $e) {}
+
+        // Finance - Budget Approvals
+        try {
+            $budgets = $db->query("SELECT b.*, p.project_name, 'FINANCE' as module_type, 'Budget Approval' as approval_type 
+                                  FROM budgets b 
+                                  LEFT JOIN projects p ON b.project_id = p.id 
+                                  WHERE b.status = 'pending' 
+                                  ORDER BY b.created_at DESC")->fetchAll();
+            $approvals = array_merge($approvals, $budgets);
+        } catch (Exception $e) {}
+
+        // Bids - Final Approval
+        try {
+            $bids = $db->query("SELECT b.*, 'BIDS' as module_type, 'Bid Final Review' as approval_type 
+                               FROM bids b 
+                               WHERE b.status IN ('FINANCIAL_COMPLETED', 'FINANCE_FINAL_REVIEW', 'GM_REVIEW') 
+                               ORDER BY b.deadline ASC")->fetchAll();
+            $approvals = array_merge($approvals, $bids);
+        } catch (Exception $e) {}
+
+        // Procurement - Material Requests
+        try {
+            $materials = $db->query("SELECT mr.*, s.site_name, 'PROCUREMENT' as module_type, 'Material Request' as approval_type 
+                                    FROM material_requests mr 
+                                    JOIN sites s ON mr.site_id = s.id 
+                                    WHERE mr.gm_approval_status = 'pending' 
+                                    ORDER BY mr.created_at DESC")->fetchAll();
+            $approvals = array_merge($approvals, $materials);
+        } catch (Exception $e) {}
+
+        // Planning - Schedule Approvals
+        try {
+            $schedules = $db->query("SELECT ms.*, p.project_name, 'PLANNING' as module_type, 'Schedule Approval' as approval_type 
+                                    FROM master_schedules ms 
+                                    LEFT JOIN projects p ON ms.project_id = p.id 
+                                    WHERE ms.gm_approval_status = 'pending' 
+                                    ORDER BY ms.created_at DESC")->fetchAll();
+            $approvals = array_merge($approvals, $schedules);
+        } catch (Exception $e) {}
+
+        return $approvals;
+    }
+
+    /**
+     * Get finance overview for GM dashboard
+     */
+    public static function getFinanceOverview() {
+        $db = Database::getInstance();
+        try {
+            return [
+                'total_budget' => $db->query("SELECT SUM(total_amount) FROM budgets WHERE status = 'active'")->fetchColumn() ?: 0,
+                'total_expenses' => $db->query("SELECT SUM(amount) FROM expenses")->fetchColumn() ?: 0,
+                'pending_budgets' => $db->query("SELECT COUNT(*) FROM budgets WHERE status = 'pending'")->fetchColumn() ?: 0,
+                'budget_alerts' => $db->query("SELECT b.*, p.project_name, 
+                                              (SELECT SUM(amount) FROM expenses WHERE budget_id = b.id) as spent 
+                                              FROM budgets b 
+                                              LEFT JOIN projects p ON b.project_id = p.id 
+                                              WHERE (SELECT SUM(amount) FROM expenses WHERE budget_id = b.id) > (b.total_amount * 0.9) 
+                                              ORDER BY b.created_at DESC")->fetchAll()
+            ];
+        } catch (Exception $e) {
+            return [
+                'total_budget' => 0,
+                'total_expenses' => 0,
+                'pending_budgets' => 0,
+                'budget_alerts' => []
+            ];
+        }
+    }
+
+    /**
+     * Get HR overview for GM dashboard
+     */
+    public static function getHROverview() {
+        $db = Database::getInstance();
+        try {
+            return [
+                'total_employees' => $db->query("SELECT COUNT(*) FROM employees WHERE status = 'active'")->fetchColumn() ?: 0,
+                'pending_hires' => $db->query("SELECT COUNT(*) FROM employees WHERE gm_approval_status = 'pending'")->fetchColumn() ?: 0,
+                'pending_leaves' => $db->query("SELECT COUNT(*) FROM leave_requests WHERE gm_approval_status = 'pending'")->fetchColumn() ?: 0,
+                'recent_hires' => $db->query("SELECT e.*, u.username 
+                                             FROM employees e 
+                                             JOIN users u ON e.user_id = u.id 
+                                             WHERE e.gm_approval_status = 'pending' 
+                                             ORDER BY e.created_at DESC 
+                                             LIMIT 5")->fetchAll()
+            ];
+        } catch (Exception $e) {
+            return [
+                'total_employees' => 0,
+                'pending_hires' => 0,
+                'pending_leaves' => 0,
+                'recent_hires' => []
+            ];
+        }
+    }
+
+    /**
+     * Get planning overview for GM dashboard
+     */
+    public static function getPlanningOverview() {
+        $db = Database::getInstance();
+        try {
+            return [
+                'active_projects' => $db->query("SELECT COUNT(*) FROM projects WHERE status = 'active'")->fetchColumn() ?: 0,
+                'pending_schedules' => $db->query("SELECT COUNT(*) FROM master_schedules WHERE gm_approval_status = 'pending'")->fetchColumn() ?: 0,
+                'delayed_projects' => $db->query("SELECT p.*, 
+                                                 (SELECT COUNT(*) FROM sites WHERE project_id = p.id) as site_count 
+                                                 FROM projects p 
+                                                 WHERE p.progress_percent < 50 AND p.status = 'active' 
+                                                 ORDER BY p.progress_percent ASC 
+                                                 LIMIT 5")->fetchAll()
+            ];
+        } catch (Exception $e) {
+            return [
+                'active_projects' => 0,
+                'pending_schedules' => 0,
+                'delayed_projects' => []
+            ];
+        }
+    }
 }
+

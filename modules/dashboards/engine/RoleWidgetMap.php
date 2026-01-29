@@ -182,18 +182,8 @@ return [
             ['id' => 'transport_trips', 'size' => 'full', 'params' => ['scope' => 'my_trips']]
         ]
     ],
-    'TENDER_FINANCE' => [
-        'layout' => 'grid',
-        'widgets' => [
-            ['id' => 'bid_pipeline', 'size' => 'full', 'params' => ['module' => 'finance']]
-        ]
-    ],
-    'TENDER_TECHNICAL' => [
-        'layout' => 'grid',
-        'widgets' => [
-            ['id' => 'bid_pipeline', 'size' => 'full', 'params' => ['module' => 'technical']]
-        ]
-    ],
+
+
     'PURCHASE_MANAGER' => [
         'layout' => 'grid',
         'widgets' => [

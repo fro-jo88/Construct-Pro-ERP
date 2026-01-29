@@ -4,7 +4,7 @@ require_once __DIR__ . '/../../includes/AuthManager.php';
 require_once __DIR__ . '/../../includes/BidManager.php';
 require_once __DIR__ . '/../../includes/TenderManager.php';
 
-AuthManager::requireRole(['TECH_BID_MANAGER', 'TENDER_FINANCE', 'FINANCE_BID_MANAGER', 'GM']);
+AuthManager::requireRole(['TECH_BID_MANAGER', 'FINANCE_BID_MANAGER', 'GM']);
 
 $tenders = TenderManager::getAllTenders(); // Get all active bids
 

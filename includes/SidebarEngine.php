@@ -15,10 +15,11 @@ class SidebarEngine {
     }
 
     private function getMenuItems() {
-        if (array_key_exists($this->role, $this->menus)) {
-            return $this->menus[$this->role];
-        }
-        return $this->menus['default'];
+        $role_items = $this->menus[$this->role] ?? [];
+        $default_items = $this->menus['default'] ?? [];
+        
+        // Return merged list (role items first, then common items)
+        return array_merge($role_items, $default_items);
     }
 
     public function render() {

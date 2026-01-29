@@ -16,24 +16,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (isset($_POST['submission_mode']) && $_POST['submission_mode'] === 'softcopy' && isset($_FILES['bid_file'])) {
                 $file = $_FILES['bid_file'];
                 if ($file['error'] === 0) {
-                    $upload_dir = __DIR__ . '/../../uploads/tenders/';
-                    if (!is_dir($upload_dir)) mkdir($upload_dir, 0777, true);
-                    
-                    $filename = time() . '_' . basename($file['name']);
-                    $target_file = $upload_dir . $filename;
-                    
-                    if (move_uploaded_file($file['tmp_name'], $target_file)) {
-                        $data['bid_file'] = 'uploads/tenders/' . $filename;
+                    $allowed = ['pdf', 'doc', 'docx', 'xls', 'xlsx'];
+                    $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+
+                    if (in_array($ext, $allowed)) {
+                        $upload_dir = __DIR__ . '/../../uploads/bids/';
+                        if (!is_dir($upload_dir)) mkdir($upload_dir, 0777, true);
+                        
+                        $unique_name = 'bid_doc_' . bin2hex(random_bytes(8)) . '_' . time() . '.' . $ext;
+                        $target_file = $upload_dir . $unique_name;
+                        
+                        if (move_uploaded_file($file['tmp_name'], $target_file)) {
+                            $data['bid_file'] = 'uploads/bids/' . $unique_name;
+                        }
+                    } else {
+                        $msg = "Error: Invalid file format. Only PDF, DOC/DOCX, and XLS/XLSX are accepted.";
+                        $error_occurred = true;
                     }
                 }
             }
             
-            HRManager::createTender($data, $_SESSION['user_id']);
-            $mode_label = ($data['submission_mode'] === 'hardcopy') ? 'Hard-Copy (Physical)' : 'Soft-Copy (Digital)';
-            $msg = "Tender origin created successfully as <strong>$mode_label</strong>.";
-        } elseif ($_POST['action'] === 'submit_to_gm') {
-            BidManager::completeTechnical($_POST['tender_id'], $_SESSION['user_id']);
-            $msg = "Bid technical phase completed and pushed to Finance/GM.";
+            if (!isset($error_occurred)) {
+                HRManager::createTender($data, $_SESSION['user_id']);
+                $mode_label = ($data['submission_mode'] === 'hardcopy') ? 'Hard-Copy (Physical)' : 'Soft-Copy (Digital)';
+                $msg = "Tender origin created successfully as <strong>$mode_label</strong>.";
+            }
         }
     }
 }
@@ -90,16 +97,12 @@ $tenders = HRManager::getTenders();
                             <td><?= $t['creator_name'] ?></td>
                             <td style="text-align:right;">
                                 <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
-                                    <?php if ($t['status'] === 'DRAFT'): ?>
-                                        <form method="POST" style="margin:0;">
-                                            <input type="hidden" name="action" value="submit_to_gm">
-                                            <input type="hidden" name="tender_id" value="<?= $t['id'] ?>">
-                                            <button type="submit" class="btn-secondary-sm" style="color:var(--gold); border-color:var(--gold);">Push to Technical</button>
-                                        </form>
-                                    <?php elseif ($t['status'] === 'WON'): ?>
+                                    <?php if ($t['status'] === 'WON'): ?>
                                         <a href="main.php?module=hr/sites&tender_id=<?= $t['id'] ?>" class="btn-primary-sm" style="text-decoration:none; font-size:0.75rem; background:#00ff64; color:black;">Initialize Site</a>
                                     <?php endif; ?>
-                                    <button class="btn-secondary-sm"><i class="fas fa-eye"></i></button>
+                                    <a href="main.php?module=bidding/view&id=<?= $t['id'] ?>" class="btn-secondary-sm" title="View Bid Details & Documents">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
                                 </div>
                             </td>
                         </tr>

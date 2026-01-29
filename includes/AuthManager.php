@@ -6,8 +6,7 @@ require_once __DIR__ . '/Database.php';
 class AuthManager {
     public static function requireRole($required_role) {
         if (!self::isLoggedIn()) {
-            header("Location: index.php");
-            exit();
+            self::safeRedirect("index.php");
         }
 
         $current_role = $_SESSION['role_code'] ?? '';
@@ -18,18 +17,29 @@ class AuthManager {
         }
 
         // 2. Check if required_role is an array (multiple allowed roles) or a single string
+        $authorized = false;
         if (is_array($required_role)) {
-            if (!in_array($current_role, $required_role)) {
-                header("Location: unauthorized.php");
-                exit();
+            if (in_array($current_role, $required_role)) {
+                $authorized = true;
             }
         } else {
-            // Single string role check
-            if ($current_role !== strtoupper($required_role)) {
-                header("Location: unauthorized.php");
-                exit();
+            if ($current_role === strtoupper($required_role)) {
+                $authorized = true;
             }
         }
+
+        if (!$authorized) {
+            self::safeRedirect("unauthorized.php");
+        }
+    }
+
+    public static function safeRedirect($url) {
+        if (!headers_sent()) {
+            header("Location: $url");
+        } else {
+            echo "<script>window.location.href='$url';</script>";
+        }
+        exit();
     }
 
     public static function login($username, $password) {

@@ -33,8 +33,8 @@ return [
     'Procurement' => [
         ['name' => 'Kalkidan Fekadu', 'user' => 'proc.kalkidan', 'role' => 'PURCHASE_MANAGER', 'dept' => 'Procurement', 'dashboard' => 'Procurement Dashboard'],
         ['name' => 'Dawit Abebe', 'user' => 'proc.dawit', 'role' => 'PURCHASE_OFFICER', 'dept' => 'Procurement', 'dashboard' => 'Purchasing'],
-        ['name' => 'Lema Gurmu', 'user' => 'tend.lema', 'role' => 'TENDER_FINANCE', 'dept' => 'Tender', 'dashboard' => 'Tender Docs'],
-        ['name' => 'Sarah Ali', 'user' => 'tend.sarah', 'role' => 'TENDER_TECHNICAL', 'dept' => 'Tender', 'dashboard' => 'Tender Docs'],
+        ['name' => 'Lema Gurmu', 'user' => 'tend.lema', 'role' => 'FINANCE_BID_MANAGER', 'dept' => 'Tender', 'dashboard' => 'Tender Docs'],
+        ['name' => 'Sarah Ali', 'user' => 'tend.sarah', 'role' => 'TECH_BID_MANAGER', 'dept' => 'Tender', 'dashboard' => 'Tender Docs'],
     ],
     'System Admin' => [
         ['name' => 'Henok Getahun', 'user' => 'sys.henok', 'role' => 'SYSTEM_ADMIN', 'dept' => 'IT', 'dashboard' => 'Admin Panel'],

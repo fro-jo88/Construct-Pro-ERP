@@ -33,8 +33,8 @@ try {
         ['code' => 'STORE_KEEPER', 'name' => 'Store Keeper'],
         ['code' => 'DRIVER_MANAGER', 'name' => 'Driver Manager'],
         ['code' => 'DRIVER', 'name' => 'Driver'],
-        ['code' => 'TENDER_FINANCE', 'name' => 'Tender Finance Officer'],
-        ['code' => 'TENDER_TECHNICAL', 'name' => 'Tender Technical Officer'],
+
+
         ['code' => 'PURCHASE_MANAGER', 'name' => 'Purchase Manager'],
         ['code' => 'PURCHASE_OFFICER', 'name' => 'Purchase Officer'],
         ['code' => 'CONSTRUCTION_AUDIT', 'name' => 'Construction Audit Team'],
@@ -97,8 +97,8 @@ try {
         // PROCUREMENT & TENDER
         ['user'=>'proc.kalkidan', 'role'=>'PURCHASE_MANAGER', 'name'=>'Kalkidan Fekadu', 'dept'=>'Procurement'],
         ['user'=>'proc.dawit', 'role'=>'PURCHASE_OFFICER', 'name'=>'Dawit Abebe', 'dept'=>'Procurement'],
-        ['user'=>'tend.lema', 'role'=>'TENDER_FINANCE', 'name'=>'Lema Gurmu', 'dept'=>'Tender'],
-        ['user'=>'tend.sarah', 'role'=>'TENDER_TECHNICAL', 'name'=>'Sarah Ali', 'dept'=>'Tender'],
+        ['user'=>'tend.lema', 'role'=>'FINANCE_BID_MANAGER', 'name'=>'Lema Gurmu', 'dept'=>'Tender'],
+        ['user'=>'tend.sarah', 'role'=>'TECH_BID_MANAGER', 'name'=>'Sarah Ali', 'dept'=>'Tender'],
         
         // AUDIT
         ['user'=>'const.tesfa', 'role'=>'CONSTRUCTION_AUDIT', 'name'=>'Tesfahun Alemayehu', 'dept'=>'Audit'],
